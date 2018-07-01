@@ -67,17 +67,13 @@ Vertex cross(Vertex const &v1, Vertex const &v2)
                   v1.x() * v2.y() - v1.y() * v2.x());
 }
 
-GLfloat light_diffuse[] = {1.0, 0.0, 0.0, 1.0};  /* Red diffuse light. */
-GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};  /* Infinite light location. */
-Vertex n[6] = {  /* Normals for the 6 faces of a cube. */
-    Vertex(-1.0, 0.0, 0.0),
-    Vertex(0.0, 1.0, 0.0),
-    Vertex(1.0, 0.0, 0.0),
-    Vertex(0.0, -1.0, 0.0),
-    Vertex(0.0, 0.0, 1.0),
-    Vertex(0.0, 0.0, -1.0)
-};
-GLint faces[6][4] = {  /* Vertex indices for the 6 faces of a cube. */
+// White diffuse light.
+GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+// Infinite light location.
+GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
+
+// Vertex indices for the 6 faces of a cube.
+GLint faces[6][4] = {
     {1, 0, 2, 3}, {3, 2, 6, 7}, {7, 6, 4, 5},
     {5, 4, 0, 1}, {4, 0, 2, 6}, {7, 3, 1, 5} };
 
@@ -92,28 +88,27 @@ Vertex v[8] = {
     Vertex(+1, +1, +1),
 };
 
-void
-drawBox(void)
+void drawBox(void)
 {
     int i;
 
-    std::cout << "drawBox" << std::endl;
     for (i = 0; i < 6; i++) {
+        Vertex &v0 = v[faces[i][0]];
+        Vertex &v1 = v[faces[i][1]];
+        Vertex &v2 = v[faces[i][2]];
+        Vertex &v3 = v[faces[i][3]];
+        Vertex n = cross(v3 - v0, v1 - v0).norm();
         glBegin(GL_QUADS);
-        Vertex norm = cross(v[faces[i][3]] - v[faces[i][0]],
-                            v[faces[i][1]] - v[faces[i][0]]);
-        std::cout << n[i] << " " << norm << std::endl;
-        glNormal3fv(n[i].p);
-        glVertex3fv(v[faces[i][0]].p);
-        glVertex3fv(v[faces[i][1]].p);
-        glVertex3fv(v[faces[i][2]].p);
-        glVertex3fv(v[faces[i][3]].p);
+        glNormal3fv(n.p);
+        glVertex3fv(v0.p);
+        glVertex3fv(v1.p);
+        glVertex3fv(v2.p);
+        glVertex3fv(v3.p);
         glEnd();
     }
 }
 
-void
-display(void)
+void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glRotatef(5, 1.0, 0.0, 0.0);
@@ -122,8 +117,7 @@ display(void)
     glutSwapBuffers();
 }
 
-void
-init(void)
+void init(void)
 {
     /* Enable a single OpenGL light. */
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
@@ -150,14 +144,13 @@ init(void)
     glRotatef(-20, 0.0, 0.0, 1.0);
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutCreateWindow("red 3D lighted cube");
+    glutCreateWindow("Radiosity demo thing");
     glutDisplayFunc(display);
     init();
     glutMainLoop();
-    return 0;             /* ANSI C requires main to return int. */
+    return 0;
 }
