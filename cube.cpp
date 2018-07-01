@@ -1,12 +1,10 @@
-
-/* Copyright (c) Mark J. Kilgard, 1997. */
-
-/* This program is freely distributable without licensing fees
-   and is provided without guarantee or warrantee expressed or
-   implied. This program is -not- in the public domain. */
-
-/* This program was requested by Patrick Earl; hopefully someone else
-   will write the equivalent Direct3D immediate mode program. */
+////////////////////////////////////////////////////////////////////////
+//
+// Copyright (c) Simon Frankaus 2018
+//
+// Portions Copyright (c) Mark J. Kilgard, 1997, from
+// https://www.opengl.org/archives/resources/code/samples/glut_examples/examples/cube.c
+//
 
 // TODO: Must be a better way, but those OpenGL deprecation warnings
 // are really annoying.
@@ -20,6 +18,9 @@
 
 #include <iostream>
 #include <cmath>
+
+////////////////////////////////////////////////////////////////////////
+// Yet another 3d point class
 
 class Vertex
 {
@@ -66,6 +67,9 @@ Vertex cross(Vertex const &v1, Vertex const &v2)
                   v1.z() * v2.x() - v1.x() * v2.z(),
                   v1.x() * v2.y() - v1.y() * v2.x());
 }
+
+////////////////////////////////////////////////////////////////////////
+// And the main rendering bit...
 
 // White diffuse light.
 GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
@@ -119,26 +123,30 @@ void display(void)
 
 void init(void)
 {
-    /* Enable a single OpenGL light. */
+    // Enable a single OpenGL light. Should switch to flat lighting
+    // once the light is calculated via radiosity.
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHTING);
 
-    /* Use depth buffering for hidden surface elimination. */
+    // Use depth buffering for hidden surface elimination.
     glEnable(GL_DEPTH_TEST);
 
-    /* Setup the view of the cube. */
+    // Setup the view of the cube. Will become a view from inside the
+    // cube.
     glMatrixMode(GL_PROJECTION);
-    gluPerspective( /* field of view in degree */ 40.0,
-                    /* aspect ratio */ 1.0,
-                    /* Z near */ 1.0, /* Z far */ 10.0);
+    gluPerspective(40.0,  // Field of view in degrees
+                   1.0,   // Aspect ratio
+                   1.0,   // Z near
+                   10.0); // Z far
     glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 5.0,  /* eye is at (0,0,5) */
-              0.0, 0.0, 0.0,      /* center is at (0,0,0) */
-              0.0, 1.0, 0.);      /* up is in positive Y direction */
+    gluLookAt(0.0, 0.0, 5.0, // Eye position
+              0.0, 0.0, 0.0, // Looking at
+              0.0, 1.0, 0.); // Up is in positive Y direction
 
-    /* Adjust cube position to be asthetic angle. */
+    // Adjust cube position to be asthetic angle. Will go away when
+    // we're just rendering the inside of the space.
     glTranslatef(0.0, 0.0, -1.0);
     glRotatef(60, 1.0, 0.0, 0.0);
     glRotatef(-20, 0.0, 0.0, 1.0);
