@@ -79,7 +79,7 @@ Vertex n[6] = {  /* Normals for the 6 faces of a cube. */
 };
 GLint faces[6][4] = {  /* Vertex indices for the 6 faces of a cube. */
     {1, 0, 2, 3}, {3, 2, 6, 7}, {7, 6, 4, 5},
-    {5, 4, 0, 1}, {4, 6, 2, 0}, {7, 5, 1, 3} };
+    {5, 4, 0, 1}, {4, 0, 2, 6}, {7, 3, 1, 5} };
 
 Vertex v[8] = {
     Vertex(-1, -1, -1),
