@@ -69,6 +69,38 @@ Vertex cross(Vertex const &v1, Vertex const &v2)
 }
 
 ////////////////////////////////////////////////////////////////////////
+// And a quadrilateral
+
+class Quad
+{
+public:
+    Quad(GLint v1, GLint v2,
+         GLint v3, GLint v4)
+        : indices { v1, v2, v3, v4 }
+    {}
+
+    void render(Vertex const *v)
+    {
+        Vertex const &v0 = v[indices[0]];
+        Vertex const &v1 = v[indices[1]];
+        Vertex const &v2 = v[indices[2]];
+        Vertex const &v3 = v[indices[3]];
+        Vertex n = cross(v3 - v0, v1 - v0).norm();
+        glBegin(GL_QUADS);
+        glNormal3fv(n.p);
+        glVertex3fv(v0.p);
+        glVertex3fv(v1.p);
+        glVertex3fv(v2.p);
+        glVertex3fv(v3.p);
+        glEnd();
+    }
+
+private:
+    GLint indices[4];
+};
+
+
+////////////////////////////////////////////////////////////////////////
 // And the main rendering bit...
 
 // White diffuse light.
@@ -77,11 +109,12 @@ GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
 GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
 
 // Vertex indices for the 6 faces of a cube.
-GLint faces[6][4] = {
-    {1, 0, 2, 3}, {3, 2, 6, 7}, {7, 6, 4, 5},
-    {5, 4, 0, 1}, {4, 0, 2, 6}, {7, 3, 1, 5} };
+Quad faces[6] = {
+    Quad(1, 0, 2, 3), Quad(3, 2, 6, 7), Quad(7, 6, 4, 5),
+    Quad(5, 4, 0, 1), Quad(4, 0, 2, 6), Quad(7, 3, 1, 5)
+};
 
-Vertex v[8] = {
+Vertex vertices[8] = {
     Vertex(-1, -1, -1),
     Vertex(-1, -1, +1),
     Vertex(-1, +1, -1),
@@ -94,21 +127,8 @@ Vertex v[8] = {
 
 void drawBox(void)
 {
-    int i;
-
-    for (i = 0; i < 6; i++) {
-        Vertex &v0 = v[faces[i][0]];
-        Vertex &v1 = v[faces[i][1]];
-        Vertex &v2 = v[faces[i][2]];
-        Vertex &v3 = v[faces[i][3]];
-        Vertex n = cross(v3 - v0, v1 - v0).norm();
-        glBegin(GL_QUADS);
-        glNormal3fv(n.p);
-        glVertex3fv(v0.p);
-        glVertex3fv(v1.p);
-        glVertex3fv(v2.p);
-        glVertex3fv(v3.p);
-        glEnd();
+    for (int i = 0; i < 6; i++) {
+        faces[i].render(vertices);
     }
 }
 
