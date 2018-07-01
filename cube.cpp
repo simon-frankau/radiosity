@@ -21,11 +21,6 @@
 class Vertex
 {
 public:
-    // TODO: Remove
-    Vertex()
-        : p {0, 0, 0}
-    {}
-
     Vertex(GLfloat ix, GLfloat iy, GLfloat iz)
         : p {ix, iy, iz}
     {}
@@ -47,16 +42,16 @@ GLfloat n[6][3] = {  /* Normals for the 6 faces of a cube. */
     {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0},
     {0.0, -1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, -1.0} };
 GLint faces[6][4] = {  /* Vertex indices for the 6 faces of a cube. */
-    {0, 1, 2, 3}, {3, 2, 6, 7}, {7, 6, 5, 4},
-    {4, 5, 1, 0}, {5, 6, 2, 1}, {7, 4, 0, 3} };
+    {1, 0, 2, 3}, {3, 2, 6, 7}, {7, 6, 4, 5},
+    {5, 4, 0, 1}, {4, 6, 2, 0}, {7, 5, 1, 3} };
 
 Vertex v[8] = {
-    Vertex(-1, -1, +1),
     Vertex(-1, -1, -1),
+    Vertex(-1, -1, +1),
     Vertex(-1, +1, -1),
     Vertex(-1, +1, +1),
-    Vertex(+1, -1, +1),
     Vertex(+1, -1, -1),
+    Vertex(+1, -1, +1),
     Vertex(+1, +1, -1),
     Vertex(+1, +1, +1),
 };
