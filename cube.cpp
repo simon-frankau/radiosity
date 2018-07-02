@@ -25,8 +25,7 @@
 
 // Break up each base quad into subdivision^2 subquads for radiosity
 // calculations.
-// TODO GLint const SUBDIVISION = 16;
-GLint const SUBDIVISION = 3;
+GLint const SUBDIVISION = 16;
 
 ////////////////////////////////////////////////////////////////////////
 // Yet another 3d point class
@@ -127,33 +126,27 @@ public:
 void subdivide(Quad const &quad,
                std::vector<Vertex> &vs,
                std::vector<Quad> &qs,
-               int uCount, int vCount)
+               GLint uCount, GLint vCount)
 {
-    int offset = vs.size();
-    Vertex const &v0 = vs[quad.indices[0]];
-    Vertex const &v1 = vs[quad.indices[1]];
-    Vertex const &v2 = vs[quad.indices[2]];
-    Vertex const &v3 = vs[quad.indices[3]];
-
-    std::cout << "In: " << v0 << v1 << v2 << v3 << std::endl << "Out: ";
+    GLint offset = vs.size();
+    Vertex v0 = vs[quad.indices[0]];
+    Vertex v1 = vs[quad.indices[1]];
+    Vertex v2 = vs[quad.indices[2]];
+    Vertex v3 = vs[quad.indices[3]];
 
     // Generate the grid of points we will build the quads from.
-    for (int v = 0; v < vCount + 1; ++v) {
-        for (int u = 0; u < uCount + 1; ++u) {
+    for (GLint v = 0; v < vCount + 1; ++v) {
+        for (GLint u = 0; u < uCount + 1; ++u) {
             Vertex u0 = lerp(v0, v1, static_cast<GLfloat>(u) / uCount);
             Vertex u1 = lerp(v3, v2, static_cast<GLfloat>(u) / uCount);
             Vertex pt = lerp(u0, u1, static_cast<GLfloat>(v) / vCount);
             vs.push_back(pt);
-            std::cout << pt;
         }
     }
 
-    int offset2 = vs.size();
-    std::cout << std::endl << "Added " << (offset2 - offset) << std::endl;
-
     // Build the corners of the quads.
-    for (int v = 0; v < vCount; ++v) {
-        for (int u = 0; u < uCount; ++u) {
+    for (GLint v = 0; v < vCount; ++v) {
+        for (GLint u = 0; u < uCount; ++u) {
             GLint base = offset + v * (uCount + 1) + u;
             // Slightly arbitrary colour with which to see the
             // tesselation pattern.
