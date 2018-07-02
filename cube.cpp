@@ -21,6 +21,13 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////////
+// Constants etc.
+
+// Break up each base quad into subdivision^2 subquads for radiosity
+// calculations.
+GLint const SUBDIVISION = 16;
+
+////////////////////////////////////////////////////////////////////////
 // Yet another 3d point class
 
 class Vertex
@@ -81,7 +88,7 @@ public:
         : indices { v1, v2, v3, v4 }, brightness(b)
     {}
 
-    void render(std::vector<Vertex> const &v)
+    void render(std::vector<Vertex> const &v) const
     {
         Vertex const &v0 = v[indices[0]];
         Vertex const &v1 = v[indices[1]];
@@ -105,19 +112,28 @@ private:
     GLfloat brightness;
 };
 
+// Break apart the given quad into a bunch of quads, add them to "qs",
+// and add the new vertices to "vs".
+void subdivide(Quad const &quad,
+               std::vector<Vertex> &vs,
+               std::vector<Quad> &qs,
+               int uCount, int vCount)
+{
+    // TODO: Support a case other than "1x1"! ;)
+    qs.push_back(quad);
+}
+
 ////////////////////////////////////////////////////////////////////////
 // And the main rendering bit...
 
-// White diffuse light.
-GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-// Infinite light location.
-GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
-
 // Vertex indices for the 6 faces of a cube.
-std::vector<Quad> faces = {
+std::vector<Quad> origFaces = {
     Quad(1, 0, 2, 3, 1.0), Quad(3, 2, 6, 7, 0.8), Quad(7, 6, 4, 5, 0.6),
     Quad(5, 4, 0, 1, 0.5), Quad(4, 0, 2, 6, 0.4), Quad(7, 3, 1, 5, 0.3)
 };
+
+// Will be initialised with the subdivided faces.
+std::vector<Quad> faces;
 
 std::vector<Vertex> vertices = {
     Vertex(-1, -1, -1),
@@ -130,10 +146,20 @@ std::vector<Vertex> vertices = {
     Vertex(+1, +1, +1),
 };
 
+// Subdivide the faces
+void initGeometry(void)
+{
+    for (std::vector<Quad>::const_iterator iter = origFaces.begin(),
+             end = origFaces.end(); iter != end; ++iter) {
+        subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
+    }
+}
+
 void drawBox(void)
 {
-    for (int i = 0; i < 6; i++) {
-        faces[i].render(vertices);
+    for (std::vector<Quad>::const_iterator iter = faces.begin(),
+             end = faces.end(); iter != end; ++iter) {
+        iter->render(vertices);
     }
 }
 
@@ -146,7 +172,7 @@ void display(void)
     glutSwapBuffers();
 }
 
-void init(void)
+void initGL(void)
 {
     // Flat shading.
     glEnable(GL_COLOR_MATERIAL);
@@ -178,7 +204,8 @@ int main(int argc, char **argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutCreateWindow("Radiosity demo thing");
     glutDisplayFunc(display);
-    init();
+    initGL();
+    initGeometry();
     glutMainLoop();
     return 0;
 }
