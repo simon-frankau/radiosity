@@ -214,7 +214,10 @@ void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
     // Choose the quad to act as light source. This is a hacky way to
     // find the one that's the centre of the first face.
-    Quad const &centre = qs[SUBDIVISION * (SUBDIVISION + 1) / 2];
+    GLint const faceNum = SUBDIVISION * SUBDIVISION * 1;
+    GLint const quadInFace = SUBDIVISION * (SUBDIVISION + 1) / 2;
+
+    Quad const &centre = qs[faceNum + quadInFace];
 
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
          iter != end; ++iter) {
@@ -281,12 +284,12 @@ void initGL(void)
     // Setup the view of the cube. Will become a view from inside the
     // cube.
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(40.0,  // Field of view in degrees
+    gluPerspective(45.0,  // Field of view in degrees
                    1.0,   // Aspect ratio
                    1.0,   // Z near
                    10.0); // Z far
     glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 5.0, // Eye position
+    gluLookAt(0.0, 0.0, 3.0, // Eye position
               0.0, 0.0, 0.0, // Looking at
               0.0, 1.0, 0.); // Up is in positive Y direction
 }
