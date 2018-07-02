@@ -98,6 +98,12 @@ public:
         : indices { v1, v2, v3, v4 }, brightness(b)
     {}
 
+    Quad(GLint v1, GLint v2,
+         GLint v3, GLint v4)
+        : Quad(v1, v2, v3, v4, 1.0)
+    {}
+
+
     void render(std::vector<Vertex> const &v) const
     {
         Vertex const &v0 = v[indices[0]];
@@ -106,9 +112,7 @@ public:
         Vertex const &v3 = v[indices[3]];
         Vertex n = cross(v3 - v0, v1 - v0).norm();
         glBegin(GL_QUADS);
-        glColor3f(brightness,
-                  fmod(brightness * 3.7, 1),
-                  fmod(brightness * 16.1, 1));
+        glColor3f(brightness, brightness, brightness);
         glNormal3fv(n.p);
         glVertex3fv(v0.p);
         glVertex3fv(v1.p);
@@ -151,9 +155,40 @@ void subdivide(Quad const &quad,
             // Slightly arbitrary colour with which to see the
             // tesselation pattern.
             qs.push_back(Quad(base, base + 1,
-                              base + uCount + 2, base + uCount + 1,
-                              fmod(quad.brightness * (1.0 + static_cast<GLfloat>(base) / (uCount * vCount)), 1.0)));
+                              base + uCount + 2, base + uCount + 1));
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////
+// Radiosity calculations
+
+Vertex centre(Quad const &q, std::vector<Vertex> const &vs)
+{
+    return lerp(vs[q.indices[0]], vs[q.indices[2]], 0.5);
+}
+
+// Ignoring visibility, etc., calculate transfer between two quads.
+GLfloat basicTransfer(Quad const &q1, Quad const &q2,
+                      std::vector<Vertex> const &vs)
+{
+    // Find centres of the quads
+    Vertex c1 = centre(q1, vs);
+    Vertex c2 = centre(q2, vs);
+    // Vector from one quad to the other.
+    Vertex path = c2 - c1;
+
+    // Let's just make it 1/r^2 to start with...
+    GLfloat l = path.len();
+    // TODO std::cout << l << std::endl;
+    return fmin(1.0, 1.0 / (l * l));
+}
+
+void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
+{
+    for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
+         iter != end; ++iter) {
+        iter->brightness = basicTransfer(qs[0], *iter, vs);
     }
 }
 
@@ -162,8 +197,8 @@ void subdivide(Quad const &quad,
 
 // Vertex indices for the 6 faces of a cube.
 std::vector<Quad> origFaces = {
-    Quad(1, 0, 2, 3, 1.0), Quad(3, 2, 6, 7, 0.8), Quad(7, 6, 4, 5, 0.6),
-    Quad(5, 4, 0, 1, 0.5), Quad(4, 0, 2, 6, 0.4), Quad(7, 3, 1, 5, 0.3)
+    Quad(1, 0, 2, 3), Quad(3, 2, 6, 7), Quad(7, 6, 4, 5),
+    Quad(5, 4, 0, 1), Quad(4, 0, 2, 6), Quad(7, 3, 1, 5)
 };
 
 // Will be initialised with the subdivided faces.
@@ -241,6 +276,7 @@ int main(int argc, char **argv)
     glutDisplayFunc(display);
     initGL();
     initGeometry();
+    calculateLighting(faces, vertices);
     glutMainLoop();
     return 0;
 }
