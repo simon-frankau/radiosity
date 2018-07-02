@@ -227,8 +227,8 @@ void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 
 // Vertex indices for the 6 faces of a cube.
 std::vector<Quad> origFaces = {
-    Quad(1, 0, 2, 3), Quad(3, 2, 6, 7), Quad(7, 6, 4, 5),
-    Quad(5, 4, 0, 1), Quad(4, 0, 2, 6), Quad(7, 3, 1, 5)
+    Quad(1, 3, 2, 0), Quad(3, 7, 6, 2), Quad(7, 5, 4, 6),
+    Quad(5, 1, 0, 4), Quad(4, 0, 2, 6), Quad(7, 3, 1, 5)
 };
 
 // Will be initialised with the subdivided faces.
@@ -266,7 +266,7 @@ void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glRotatef(5, 1.0, 0.0, 0.0);
-    glRotatef(-5, 0.0, 0.0, 1.0);
+    glRotatef(-13, 4.0, 0.0, 1.0);
     drawBox();
     glutSwapBuffers();
 }
@@ -277,7 +277,8 @@ void initGL(void)
     glEnable(GL_COLOR_MATERIAL);
     // Use depth buffering for hidden surface elimination.
     glEnable(GL_DEPTH_TEST);
-    // TODO: Could enable back-face culling
+    // Back-face culling.
+    glEnable(GL_CULL_FACE);
 
     // Setup the view of the cube. Will become a view from inside the
     // cube.
@@ -293,9 +294,11 @@ void initGL(void)
 
     // Adjust cube position to be asthetic angle. Will go away when
     // we're just rendering the inside of the space.
+/*
     glTranslatef(0.0, 0.0, -1.0);
     glRotatef(60, 1.0, 0.0, 0.0);
     glRotatef(-20, 0.0, 0.0, 1.0);
+*/
 }
 
 int main(int argc, char **argv)
