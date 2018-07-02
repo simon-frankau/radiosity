@@ -69,11 +69,21 @@ std::ostream &operator<<(std::ostream &os, Vertex const &v)
     return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
 }
 
+// Cross product.
 Vertex cross(Vertex const &v1, Vertex const &v2)
 {
     return Vertex(v1.y() * v2.z() - v1.z() * v2.y(),
                   v1.z() * v2.x() - v1.x() * v2.z(),
                   v1.x() * v2.y() - v1.y() * v2.x());
+}
+
+// Linear interpolation. 0 returns v1, 1 returns v2.
+Vertex lerp(Vertex const &v1, Vertex const &v2, GLfloat i)
+{
+    GLfloat j = 1.0 - i;
+    return Vertex(v1.x() * j + v2.x() * i,
+                  v1.y() * j + v2.y() * i,
+                  v1.z() * j + v2.z() * i);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -107,7 +117,6 @@ public:
         glEnd();
     }
 
-private:
     GLint indices[4];
     GLfloat brightness;
 };
@@ -120,7 +129,19 @@ void subdivide(Quad const &quad,
                int uCount, int vCount)
 {
     // TODO: Support a case other than "1x1"! ;)
-    qs.push_back(quad);
+    int offset = vs.size();
+    Vertex const &v0 = vs[quad.indices[0]];
+    Vertex const &v1 = vs[quad.indices[1]];
+    Vertex const &v2 = vs[quad.indices[2]];
+    Vertex const &v3 = vs[quad.indices[3]];
+
+    Vertex const v1b = lerp(v0, v1, 0.75);
+    Vertex const v2b = lerp(v3, v2, 0.75);
+
+    vs.push_back(v1b);
+    vs.push_back(v2b);
+
+    qs.push_back(Quad(quad.indices[0], offset, offset + 1, quad.indices[3], quad.brightness));
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -178,6 +199,7 @@ void initGL(void)
     glEnable(GL_COLOR_MATERIAL);
     // Use depth buffering for hidden surface elimination.
     glEnable(GL_DEPTH_TEST);
+    // TODO: Could enable back-face culling
 
     // Setup the view of the cube. Will become a view from inside the
     // cube.
