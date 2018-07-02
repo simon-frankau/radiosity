@@ -77,6 +77,14 @@ Vertex cross(Vertex const &v1, Vertex const &v2)
                   v1.x() * v2.y() - v1.y() * v2.x());
 }
 
+// Dot product.
+GLfloat dot(Vertex const &v1, Vertex const &v2)
+{
+    return v1.x() * v2.x()
+         + v1.y() * v2.y()
+         + v1.z() * v2.z();
+}
+
 // Linear interpolation. 0 returns v1, 1 returns v2.
 Vertex lerp(Vertex const &v1, Vertex const &v2, GLfloat i)
 {
@@ -163,9 +171,20 @@ void subdivide(Quad const &quad,
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations
 
+// Return the centre of the quad.
 Vertex centre(Quad const &q, std::vector<Vertex> const &vs)
 {
     return lerp(vs[q.indices[0]], vs[q.indices[2]], 0.5);
+}
+
+// Return the vector for the cross product of the edges - this will
+// have length proportional to area, and be normal to the quad.
+Vertex quadCross(Quad const &q, std::vector<Vertex> const &vs)
+{
+    Vertex const &v0 = vs[q.indices[0]];
+    Vertex const &v1 = vs[q.indices[1]];
+    Vertex const &v3 = vs[q.indices[3]];
+    return cross(v3 - v0, v1 - v0);
 }
 
 // Ignoring visibility, etc., calculate transfer between two quads.
@@ -178,10 +197,17 @@ GLfloat basicTransfer(Quad const &q1, Quad const &q2,
     // Vector from one quad to the other.
     Vertex path = c2 - c1;
 
-    // Let's just make it 1/r^2 to start with...
+    // Inverse square component.
     GLfloat l = path.len();
-    // TODO std::cout << l << std::endl;
-    return fmin(1.0, 1.0 / (l * l));
+    GLfloat r2 = 1.0 / (l * l);
+
+    // Find area and angle from the path.
+    // TODO: Facing direction.
+    path = path.norm();
+    GLfloat f1 = fabs(dot(quadCross(q1, vs), path)) * SUBDIVISION * SUBDIVISION / 4.0;
+    GLfloat f2 = fabs(dot(quadCross(q2, vs), path)) * SUBDIVISION * SUBDIVISION / 4.0;
+
+    return fmin(1.0, 4.0 * r2 * f1 * f2);
 }
 
 void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
