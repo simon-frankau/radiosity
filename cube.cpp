@@ -25,7 +25,8 @@
 
 // Break up each base quad into subdivision^2 subquads for radiosity
 // calculations.
-GLint const SUBDIVISION = 16;
+// TODO GLint const SUBDIVISION = 16;
+GLint const SUBDIVISION = 3;
 
 ////////////////////////////////////////////////////////////////////////
 // Yet another 3d point class
@@ -128,20 +129,39 @@ void subdivide(Quad const &quad,
                std::vector<Quad> &qs,
                int uCount, int vCount)
 {
-    // TODO: Support a case other than "1x1"! ;)
     int offset = vs.size();
     Vertex const &v0 = vs[quad.indices[0]];
     Vertex const &v1 = vs[quad.indices[1]];
     Vertex const &v2 = vs[quad.indices[2]];
     Vertex const &v3 = vs[quad.indices[3]];
 
-    Vertex const v1b = lerp(v0, v1, 0.75);
-    Vertex const v2b = lerp(v3, v2, 0.75);
+    std::cout << "In: " << v0 << v1 << v2 << v3 << std::endl << "Out: ";
 
-    vs.push_back(v1b);
-    vs.push_back(v2b);
+    // Generate the grid of points we will build the quads from.
+    for (int v = 0; v < vCount + 1; ++v) {
+        for (int u = 0; u < uCount + 1; ++u) {
+            Vertex u0 = lerp(v0, v1, static_cast<GLfloat>(u) / uCount);
+            Vertex u1 = lerp(v3, v2, static_cast<GLfloat>(u) / uCount);
+            Vertex pt = lerp(u0, u1, static_cast<GLfloat>(v) / vCount);
+            vs.push_back(pt);
+            std::cout << pt;
+        }
+    }
 
-    qs.push_back(Quad(quad.indices[0], offset, offset + 1, quad.indices[3], quad.brightness));
+    int offset2 = vs.size();
+    std::cout << std::endl << "Added " << (offset2 - offset) << std::endl;
+
+    // Build the corners of the quads.
+    for (int v = 0; v < vCount; ++v) {
+        for (int u = 0; u < uCount; ++u) {
+            GLint base = offset + v * (uCount + 1) + u;
+            // Slightly arbitrary colour with which to see the
+            // tesselation pattern.
+            qs.push_back(Quad(base, base + 1,
+                              base + uCount + 2, base + uCount + 1,
+                              fmod(quad.brightness * (1.0 + static_cast<GLfloat>(base) / (uCount * vCount)), 1.0)));
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
