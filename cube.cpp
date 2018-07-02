@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////////
 // Yet another 3d point class
@@ -75,11 +76,12 @@ class Quad
 {
 public:
     Quad(GLint v1, GLint v2,
-         GLint v3, GLint v4)
-        : indices { v1, v2, v3, v4 }
+         GLint v3, GLint v4,
+         GLfloat b)
+        : indices { v1, v2, v3, v4 }, brightness(b)
     {}
 
-    void render(Vertex const *v)
+    void render(std::vector<Vertex> const &v)
     {
         Vertex const &v0 = v[indices[0]];
         Vertex const &v1 = v[indices[1]];
@@ -87,6 +89,9 @@ public:
         Vertex const &v3 = v[indices[3]];
         Vertex n = cross(v3 - v0, v1 - v0).norm();
         glBegin(GL_QUADS);
+        glColor3f(brightness,
+                  fmod(brightness * 3.7, 1),
+                  fmod(brightness * 16.1, 1));
         glNormal3fv(n.p);
         glVertex3fv(v0.p);
         glVertex3fv(v1.p);
@@ -97,8 +102,8 @@ public:
 
 private:
     GLint indices[4];
+    GLfloat brightness;
 };
-
 
 ////////////////////////////////////////////////////////////////////////
 // And the main rendering bit...
@@ -109,12 +114,12 @@ GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
 GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
 
 // Vertex indices for the 6 faces of a cube.
-Quad faces[6] = {
-    Quad(1, 0, 2, 3), Quad(3, 2, 6, 7), Quad(7, 6, 4, 5),
-    Quad(5, 4, 0, 1), Quad(4, 0, 2, 6), Quad(7, 3, 1, 5)
+std::vector<Quad> faces = {
+    Quad(1, 0, 2, 3, 1.0), Quad(3, 2, 6, 7, 0.8), Quad(7, 6, 4, 5, 0.6),
+    Quad(5, 4, 0, 1, 0.5), Quad(4, 0, 2, 6, 0.4), Quad(7, 3, 1, 5, 0.3)
 };
 
-Vertex vertices[8] = {
+std::vector<Vertex> vertices = {
     Vertex(-1, -1, -1),
     Vertex(-1, -1, +1),
     Vertex(-1, +1, -1),
@@ -143,13 +148,8 @@ void display(void)
 
 void init(void)
 {
-    // Enable a single OpenGL light. Should switch to flat lighting
-    // once the light is calculated via radiosity.
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
-
+    // Flat shading.
+    glEnable(GL_COLOR_MATERIAL);
     // Use depth buffering for hidden surface elimination.
     glEnable(GL_DEPTH_TEST);
 
