@@ -212,9 +212,13 @@ GLfloat basicTransfer(Quad const &q1, Quad const &q2,
 
 void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
+    // Choose the quad to act as light source. This is a hacky way to
+    // find the one that's the centre of the first face.
+    Quad const &centre = qs[SUBDIVISION * (SUBDIVISION + 1) / 2];
+
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
          iter != end; ++iter) {
-        iter->brightness = basicTransfer(qs[0], *iter, vs);
+        iter->brightness = basicTransfer(centre, *iter, vs);
     }
 }
 
