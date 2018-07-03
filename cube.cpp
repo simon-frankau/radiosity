@@ -25,7 +25,7 @@
 
 // Break up each base quad into subdivision^2 subquads for radiosity
 // calculations.
-GLint const SUBDIVISION = 16;
+GLint const SUBDIVISION = 32;
 
 ////////////////////////////////////////////////////////////////////////
 // Yet another 3d point class
@@ -188,12 +188,12 @@ Vertex quadCross(Quad const &q, std::vector<Vertex> const &vs)
 }
 
 // Ignoring visibility, etc., calculate transfer between two quads.
-GLfloat basicTransfer(Quad const &q1, Quad const &q2,
+GLfloat basicTransfer(Quad const &src, Quad const &dst,
                       std::vector<Vertex> const &vs)
 {
     // Find centres of the quads
-    Vertex c1 = centre(q1, vs);
-    Vertex c2 = centre(q2, vs);
+    Vertex c1 = centre(src, vs);
+    Vertex c2 = centre(dst, vs);
     // Vector from one quad to the other.
     Vertex path = c2 - c1;
 
@@ -204,8 +204,10 @@ GLfloat basicTransfer(Quad const &q1, Quad const &q2,
     // Find area and angle from the path.
     // TODO: Facing direction.
     path = path.norm();
-    GLfloat f1 = fabs(dot(quadCross(q1, vs), path)) * SUBDIVISION * SUBDIVISION / 4.0;
-    GLfloat f2 = fabs(dot(quadCross(q2, vs), path)) * SUBDIVISION * SUBDIVISION / 4.0;
+    Vertex srcNorm = quadCross(src, vs);
+    Vertex dstNorm = quadCross(dst, vs).norm();
+    GLfloat f1 = fabs(dot(srcNorm, path)) * SUBDIVISION / 3.0;
+    GLfloat f2 = fabs(dot(dstNorm, path)) * SUBDIVISION / 3.0;
 
     return fmin(1.0, 4.0 * r2 * f1 * f2);
 }
