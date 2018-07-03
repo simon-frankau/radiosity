@@ -206,10 +206,10 @@ GLfloat basicTransfer(Quad const &src, Quad const &dst,
     path = path.norm();
     Vertex srcNorm = quadCross(src, vs);
     Vertex dstNorm = quadCross(dst, vs).norm();
-    GLfloat f1 = fabs(dot(srcNorm, path)) * SUBDIVISION / 3.0;
-    GLfloat f2 = fabs(dot(dstNorm, path)) * SUBDIVISION / 3.0;
+    GLfloat f1 = fmax(0, -dot(srcNorm, path));
+    GLfloat f2 = fmax(0,  dot(dstNorm, path));
 
-    return fmin(1.0, 4.0 * r2 * f1 * f2);
+    return fmin(1.0, 0.5 * r2 * f1 * f2 * SUBDIVISION * SUBDIVISION);
 }
 
 void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
