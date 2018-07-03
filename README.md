@@ -48,3 +48,10 @@ Rather neatly, the equation is symmetric, demonstrating the nice
 symmetry between forwards and backwards ray-tracing, and how the
 radiosity solution represents an equilibrium where the net light flow
 between pairs of surfaces is zero.
+
+## TODOs
+
+ * I'd really like to put in a bunch of unit tests, but don't have
+   cppunit installed yet...
+ * Move to a scheme where visibility feeds into the calculations!
+ * Bounce the light around.
