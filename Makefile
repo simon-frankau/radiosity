@@ -5,4 +5,4 @@ clean:
 
 bin/cube: cube.cpp geom.cpp
 	mkdir -p bin
-	g++ -std=c++11 -framework GLUT -framework OpenGL $^ -o $@
+	g++ -std=c++11 -framework GLUT -framework OpenGL $^ -O2 -o $@

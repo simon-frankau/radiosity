@@ -87,16 +87,13 @@ Vertex lerp(Vertex const &v1, Vertex const &v2, GLfloat i)
 ////////////////////////////////////////////////////////////////////////
 // Quad
 
-Quad::Quad(GLint v1, GLint v2,
-     GLint v3, GLint v4,
-     GLfloat b)
+Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4, GLfloat b)
     : indices { v1, v2, v3, v4 }, brightness(b)
 {
 }
 
-Quad::Quad(GLint v1, GLint v2,
-     GLint v3, GLint v4)
-    : Quad(v1, v2, v3, v4, 1.0)
+Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4)
+    : Quad(v1, v2, v3, v4, 0.0)
 {
 }
 

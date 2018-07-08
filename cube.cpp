@@ -72,12 +72,23 @@ void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     // find the one that's the centre of the first face.
     GLint const faceNum = SUBDIVISION * SUBDIVISION * 1;
     GLint const quadInFace = SUBDIVISION * (SUBDIVISION + 1) / 2;
+    Quad &centre = qs[faceNum + quadInFace];
+    centre.brightness = 1.0;
 
-    Quad const &centre = qs[faceNum + quadInFace];
+    std::vector<GLfloat> updatedBrightness;
 
-    for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
-         iter != end; ++iter) {
-        iter->brightness = basicTransfer(centre, *iter, vs);
+    for (std::vector<Quad>::iterator dstIter = qs.begin(), end = qs.end();
+         dstIter != end; ++dstIter) {
+        GLfloat newBrightness = 0;
+        for (std::vector<Quad>::iterator srcIter = qs.begin(), srcEnd = qs.end();
+             srcIter != srcEnd; ++srcIter) {
+            newBrightness += basicTransfer(*srcIter, *dstIter, vs) * srcIter->brightness;
+        }
+        updatedBrightness.push_back(newBrightness);
+    }
+
+    for (int i = 0, n = qs.size(); i < n; ++i) {
+        qs[i].brightness = updatedBrightness[i];
     }
 }
 
