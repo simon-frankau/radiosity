@@ -68,7 +68,7 @@ GLfloat basicTransfer(Quad const &src, Quad const &dst,
     GLfloat f1 = fmax(0, -dot(srcNorm, path));
     GLfloat f2 = fmax(0,  dot(dstNorm, path));
 
-    return fmin(1.0, 0.5 * r2 * f1 * f2 * SUBDIVISION * SUBDIVISION);
+    return fmin(1.0, r2 * f1 * f2 / M_PI);
 }
 
 void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
@@ -78,7 +78,7 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     GLint const faceNum = SUBDIVISION * SUBDIVISION * 1;
     GLint const quadInFace = SUBDIVISION * (SUBDIVISION + 1) / 2;
     Quad &centre = qs[faceNum + quadInFace];
-    centre.brightness = 1.0;
+    centre.brightness = 2.0 * SUBDIVISION * SUBDIVISION;
 }
 
 void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
@@ -90,6 +90,10 @@ void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
         GLfloat newBrightness = 0;
         for (std::vector<Quad>::iterator srcIter = qs.begin(), srcEnd = qs.end();
              srcIter != srcEnd; ++srcIter) {
+            if (&*srcIter == &*dstIter) {
+                continue;
+            }
+
             newBrightness += basicTransfer(*srcIter, *dstIter, vs) * srcIter->brightness;
         }
         updatedBrightness.push_back(newBrightness);
@@ -194,6 +198,8 @@ int main(int argc, char **argv)
     calcLight(faces, vertices);
     iterateLighting(faces, vertices);
     calcLight(faces, vertices);
+    // Make the original light visible again.
+    initLighting(faces, vertices);
     glutMainLoop();
     return 0;
 }
