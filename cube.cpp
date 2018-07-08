@@ -41,6 +41,11 @@ Vertex quadCross(Quad const &q, std::vector<Vertex> const &vs)
     return cross(v3 - v0, v1 - v0);
 }
 
+GLfloat quadArea(Quad const &q, std::vector<Vertex> const &vs)
+{
+    return quadCross(q, vs).len();
+}
+
 // Ignoring visibility, etc., calculate transfer between two quads.
 GLfloat basicTransfer(Quad const &src, Quad const &dst,
                       std::vector<Vertex> const &vs)
@@ -94,6 +99,19 @@ void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
         qs[i].brightness = updatedBrightness[i];
     }
 }
+
+// Calculate the total light in the scene, as area-weight sum of
+// brightness.
+void calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
+{
+    GLfloat totalLight = 0.0;
+    for (std::vector<Quad>::iterator iter = qs.begin(), endnd = qs.end();
+         iter != endnd; ++iter) {
+        totalLight += iter->brightness * quadArea(*iter, vs);
+    }
+    std::cout << "Total light: " << totalLight << std::endl;
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 // And the main rendering bit...
@@ -173,7 +191,9 @@ int main(int argc, char **argv)
     initGL();
     initGeometry();
     initLighting(faces, vertices);
+    calcLight(faces, vertices);
     iterateLighting(faces, vertices);
+    calcLight(faces, vertices);
     glutMainLoop();
     return 0;
 }
