@@ -66,7 +66,7 @@ GLfloat basicTransfer(Quad const &src, Quad const &dst,
     return fmin(1.0, 0.5 * r2 * f1 * f2 * SUBDIVISION * SUBDIVISION);
 }
 
-void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
+void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
     // Choose the quad to act as light source. This is a hacky way to
     // find the one that's the centre of the first face.
@@ -74,7 +74,10 @@ void calculateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     GLint const quadInFace = SUBDIVISION * (SUBDIVISION + 1) / 2;
     Quad &centre = qs[faceNum + quadInFace];
     centre.brightness = 1.0;
+}
 
+void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
+{
     std::vector<GLfloat> updatedBrightness;
 
     for (std::vector<Quad>::iterator dstIter = qs.begin(), end = qs.end();
@@ -169,7 +172,8 @@ int main(int argc, char **argv)
     glutDisplayFunc(display);
     initGL();
     initGeometry();
-    calculateLighting(faces, vertices);
+    initLighting(faces, vertices);
+    iterateLighting(faces, vertices);
     glutMainLoop();
     return 0;
 }
