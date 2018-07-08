@@ -49,6 +49,52 @@ symmetry between forwards and backwards ray-tracing, and how the
 radiosity solution represents an equilibrium where the net light flow
 between pairs of surfaces is zero.
 
+## How much light does a point emit?
+
+If a point has a certain amount of brightness, how much light should
+it be giving off in each direction? How can work this out by
+integrating the equation above over all directions, to get the total
+it emits, and come up with a normalising factor.
+
+To specify directions over the hemisphere we're integrating over,
+we'll say that `phi` is the angle from the normal (0 to pi/2), and
+`theta` is the angle around the normal (0 to 2 * pi). We want to
+calculate the integral of `L(phi) sin(phi) d phi d theta` - the "`sin
+phi`" term is because there's a lot more surface around the edge of
+the hemisphere than at the top. `L` is symmetric around the normal, so
+doesn't depend on `theta`. We have:
+
+```
+L(phi) sin(phi) d phi d theta
+ = 2 * pi * L(phi) sin(phi) d phi
+ = 2 * pi * cos(phi) * cos(rho(phi)) * r(phi)^-2 * A(phi) * sin(phi) d phi
+```
+
+where `rho` is the angle on the receiving surface, `r` is the distance
+from source to destination for the given angle, and `A` is the rate at
+which area is swept out for small changes of `phi` and `theta`.
+
+The `cos(rho(phi)) * r(phi)^-2 * A(phi)` terms all cancel out - as
+radius increases, the area being swept out increases, so that the same
+amount of light is received. If the receiving surface is at an angle,
+more area is swept out, so the change in `A` term balances the change
+from `cos(rho(phi))`. The equation simplifies to integrating over:
+
+```
+2 * pi * cos(phi) * sin(phi) d phi
+```
+
+from 0 to 2 * pi. The integral is... pi.
+
+When I sum up the amount of light emitted by the light source in the
+code, and take out all the scaling factors I've added in, the total
+light received from sending out a "unit" light is 3.1449! The error is
+around one in a thousand, which seems about right since the
+calculations are done using transmission to a few thousand rectangles.
+
+We have empirical evidence that the calculations are about right, and
+can look into bouncing the light around...
+
 ## TODOs
 
  * I'd really like to put in a bunch of unit tests, but don't have
