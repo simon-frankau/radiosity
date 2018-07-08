@@ -78,7 +78,7 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
         Vertex c = centre(*iter, vs);
         // Put a big light in the top centre of the box.
         if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0) {
-            iter->brightness = 8.0;
+            iter->brightness = 2.0;
         }
     }
 }
@@ -197,7 +197,12 @@ int main(int argc, char **argv)
     initGL();
     initGeometry();
     initLighting(faces, vertices);
-    calcLight(faces, vertices);
+    iterateLighting(faces, vertices);
+    initLighting(faces, vertices);
+    iterateLighting(faces, vertices);
+    initLighting(faces, vertices);
+    iterateLighting(faces, vertices);
+    initLighting(faces, vertices);
     iterateLighting(faces, vertices);
     calcLight(faces, vertices);
     // Make the original light visible again.
