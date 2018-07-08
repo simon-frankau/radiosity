@@ -73,12 +73,14 @@ GLfloat basicTransfer(Quad const &src, Quad const &dst,
 
 void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
-    // Choose the quad to act as light source. This is a hacky way to
-    // find the one that's the centre of the first face.
-    GLint const faceNum = SUBDIVISION * SUBDIVISION * 1;
-    GLint const quadInFace = SUBDIVISION * (SUBDIVISION + 1) / 2;
-    Quad &centre = qs[faceNum + quadInFace];
-    centre.brightness = 2.0 * SUBDIVISION * SUBDIVISION;
+    for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
+         iter != end; ++iter) {
+        Vertex c = centre(*iter, vs);
+        // Put a big light in the top centre of the box.
+        if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0) {
+            iter->brightness = 8.0;
+        }
+    }
 }
 
 void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
