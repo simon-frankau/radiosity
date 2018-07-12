@@ -70,9 +70,6 @@ public:
          GLint v3, GLint v4,
          GLfloat l);
 
-    Quad(GLint v1, GLint v2,
-         GLint v3, GLint v4);
-
     void render(std::vector<Vertex> const &v) const;
 
     GLint indices[4];

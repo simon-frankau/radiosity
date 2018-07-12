@@ -92,11 +92,6 @@ Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4, GLfloat l)
 {
 }
 
-Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4)
-    : Quad(v1, v2, v3, v4, 0.8)
-{
-}
-
 void Quad::render(std::vector<Vertex> const &v) const
 {
     Vertex const &v0 = v[indices[0]];
@@ -141,10 +136,10 @@ void subdivide(Quad const &quad,
     for (GLint v = 0; v < vCount; ++v) {
         for (GLint u = 0; u < uCount; ++u) {
             GLint base = offset + v * (uCount + 1) + u;
-            // Slightly arbitrary colour with which to see the
-            // tesselation pattern.
             qs.push_back(Quad(base, base + 1,
-                              base + uCount + 2, base + uCount + 1));
+                              base + uCount + 2, base + uCount + 1,
+                              quad.light));
+            qs.back().isEmitter = quad.isEmitter;
         }
     }
 }

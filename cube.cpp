@@ -84,29 +84,43 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     }
 }
 
-void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
+void initTransfers(std::vector<Quad> &qs, std::vector<Vertex> const &vs,
+                   std::vector<GLfloat> &transfers)
 {
-    std::vector<GLfloat> updatedBrightness;
+    int n = qs.size();
+    // Iterate over targets
+    for (int i = 0; i < n; ++i) {
+        // Iterate over sources
+        for (int j = 0; j < n; ++j) {
+            transfers.push_back(basicTransfer(qs[j], qs[i], vs));
+        }
+    }
+}
 
-    for (std::vector<Quad>::iterator dstIter = qs.begin(), end = qs.end();
-         dstIter != end; ++dstIter) {
+void iterateLighting(std::vector<Quad> &qs, std::vector<GLfloat> const &transfers)
+{
+    int n = qs.size();
+    std::vector<GLfloat> updatedBrightness(n);
+
+    // Iterate over targets
+    for (int i = 0; i < n; ++i) {
         GLfloat newBrightness = 0;
-        if (dstIter->isEmitter) {
+        if (qs[i].isEmitter) {
             // Emission is just like having 1.0 light arrive.
             newBrightness = 1.0;
         } else {
-            for (std::vector<Quad>::iterator srcIter = qs.begin(), srcEnd = qs.end();
-                 srcIter != srcEnd; ++srcIter) {
-                if (&*srcIter == &*dstIter) {
+            // Iterate over sources
+            for (int j = 0; j < n; ++j) {
+                if (i == j) {
                     continue;
                 }
-                newBrightness += basicTransfer(*srcIter, *dstIter, vs) * srcIter->brightness;
+                newBrightness += transfers[i * n + j] * qs[j].brightness;
             }
         }
-        updatedBrightness.push_back(newBrightness * dstIter->light);
+        updatedBrightness[i] = (newBrightness * qs[i].light);
     }
 
-    for (int i = 0, n = qs.size(); i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         qs[i].brightness = updatedBrightness[i];
     }
 }
@@ -127,15 +141,20 @@ void calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 ////////////////////////////////////////////////////////////////////////
 // And the main rendering bit...
 
+// Brightness of the walls, etc.
+GLfloat const b = 0.7;
+
 // Vertex indices for the 6 faces of a cube.
 std::vector<Quad> origFaces = {
-    Quad(1, 0, 2, 3), Quad(3, 2, 6, 7), Quad(7, 6, 4, 5),
-    Quad(5, 4, 0, 1), Quad(4, 6, 2, 0), Quad(7, 5, 1, 3)
+    Quad(1, 0, 2, 3, b), Quad(3, 2, 6, 7, b), Quad(7, 6, 4, 5, b),
+    Quad(5, 4, 0, 1, b), Quad(4, 6, 2, 0, b), Quad(7, 5, 1, 3, b)
 };
 
 // Will be initialised with the subdivided faces.
 std::vector<Quad> faces;
 
+// Vector of vertices will grow with new vertices, this is just the
+// initial set defined for the initial cube.
 std::vector<Vertex> vertices = {
     Vertex(-1, -1, -1),
     Vertex(-1, -1, +1),
@@ -146,6 +165,9 @@ std::vector<Vertex> vertices = {
     Vertex(+1, +1, -1),
     Vertex(+1, +1, +1),
 };
+
+// Array of quad-to-quad light transfers.
+std::vector<GLfloat> transfers;
 
 // Subdivide the faces
 void initGeometry(void)
@@ -202,9 +224,11 @@ int main(int argc, char **argv)
     initGL();
     initGeometry();
     initLighting(faces, vertices);
-    iterateLighting(faces, vertices);
-    iterateLighting(faces, vertices);
-    calcLight(faces, vertices);
+    initTransfers(faces, vertices, transfers);
+    for (int i = 0; i < 50; ++i) {
+        iterateLighting(faces, transfers);
+        calcLight(faces, vertices);
+    }
     glutMainLoop();
     return 0;
 }
