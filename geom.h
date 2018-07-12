@@ -68,7 +68,7 @@ class Quad
 public:
     Quad(GLint v1, GLint v2,
          GLint v3, GLint v4,
-         GLfloat b);
+         GLfloat l);
 
     Quad(GLint v1, GLint v2,
          GLint v3, GLint v4);
@@ -76,6 +76,11 @@ public:
     void render(std::vector<Vertex> const &v) const;
 
     GLint indices[4];
+    // Does this quad emit light, or just reflect?
+    bool isEmitter;
+    // How much light it emits, or the fraction reflected.
+    GLfloat light;
+    // On-screen brightness.
     GLfloat brightness;
 };
 

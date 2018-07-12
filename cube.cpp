@@ -78,7 +78,8 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
         Vertex c = centre(*iter, vs);
         // Put a big light in the top centre of the box.
         if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0) {
-            iter->brightness = 2.0;
+            iter->light = iter->brightness = 2.0;
+            iter->isEmitter = true;
         }
     }
 }
@@ -90,15 +91,19 @@ void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     for (std::vector<Quad>::iterator dstIter = qs.begin(), end = qs.end();
          dstIter != end; ++dstIter) {
         GLfloat newBrightness = 0;
-        for (std::vector<Quad>::iterator srcIter = qs.begin(), srcEnd = qs.end();
-             srcIter != srcEnd; ++srcIter) {
-            if (&*srcIter == &*dstIter) {
-                continue;
+        if (dstIter->isEmitter) {
+            // Emission is just like having 1.0 light arrive.
+            newBrightness = 1.0;
+        } else {
+            for (std::vector<Quad>::iterator srcIter = qs.begin(), srcEnd = qs.end();
+                 srcIter != srcEnd; ++srcIter) {
+                if (&*srcIter == &*dstIter) {
+                    continue;
+                }
+                newBrightness += basicTransfer(*srcIter, *dstIter, vs) * srcIter->brightness;
             }
-
-            newBrightness += basicTransfer(*srcIter, *dstIter, vs) * srcIter->brightness;
         }
-        updatedBrightness.push_back(newBrightness);
+        updatedBrightness.push_back(newBrightness * dstIter->light);
     }
 
     for (int i = 0, n = qs.size(); i < n; ++i) {
@@ -111,8 +116,8 @@ void iterateLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 void calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
     GLfloat totalLight = 0.0;
-    for (std::vector<Quad>::iterator iter = qs.begin(), endnd = qs.end();
-         iter != endnd; ++iter) {
+    for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
+         iter != end; ++iter) {
         totalLight += iter->brightness * quadArea(*iter, vs);
     }
     std::cout << "Total light: " << totalLight << std::endl;
@@ -198,15 +203,8 @@ int main(int argc, char **argv)
     initGeometry();
     initLighting(faces, vertices);
     iterateLighting(faces, vertices);
-    initLighting(faces, vertices);
-    iterateLighting(faces, vertices);
-    initLighting(faces, vertices);
-    iterateLighting(faces, vertices);
-    initLighting(faces, vertices);
     iterateLighting(faces, vertices);
     calcLight(faces, vertices);
-    // Make the original light visible again.
-    initLighting(faces, vertices);
     glutMainLoop();
     return 0;
 }
