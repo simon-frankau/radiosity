@@ -22,6 +22,8 @@
 
 #include "geom.h"
 
+const double CONVERGENCE_TARGET = 0.001;
+
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations
 
@@ -127,14 +129,14 @@ void iterateLighting(std::vector<Quad> &qs, std::vector<GLfloat> const &transfer
 
 // Calculate the total light in the scene, as area-weight sum of
 // brightness.
-void calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
+double calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
     GLfloat totalLight = 0.0;
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
          iter != end; ++iter) {
         totalLight += iter->brightness * quadArea(*iter, vs);
     }
-    std::cout << "Total light: " << totalLight << std::endl;
+    return totalLight;
 }
 
 
@@ -142,7 +144,7 @@ void calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 // And the main rendering bit...
 
 // Brightness of the walls, etc.
-GLfloat const b = 0.7;
+const GLfloat b = 0.7;
 
 // Vertex indices for the 6 faces of a cube.
 std::vector<Quad> origFaces = {
@@ -225,10 +227,16 @@ int main(int argc, char **argv)
     initGeometry();
     initLighting(faces, vertices);
     initTransfers(faces, vertices, transfers);
-    for (int i = 0; i < 50; ++i) {
+    double light = 0.0;
+    double relChange;
+    do {
         iterateLighting(faces, transfers);
-        calcLight(faces, vertices);
-    }
+        double newLight = calcLight(faces, vertices);
+        relChange = fabs(light / newLight - 1.0);
+        light = newLight;
+        std::cout << "Total light: " << light << std::endl;
+    } while (relChange > CONVERGENCE_TARGET);
+
     glutMainLoop();
     return 0;
 }
