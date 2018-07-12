@@ -1,5 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 //
+// cube.cpp: Calculate radiosity inside a cube.
+//
 // Copyright (c) Simon Frankaus 2018
 //
 // Portions Copyright (c) Mark J. Kilgard, 1997, from
