@@ -27,7 +27,7 @@ void projWeights(std::vector<GLfloat> &weights)
         for (int x = 0; x < WEIGHT_RESOLUTION; ++x) {
             Vertex v1 = Vertex(x       * conv - 1, y       * conv - 1, 1);
             Vertex v2 = Vertex((x + 1) * conv - 1, y       * conv - 1, 1);
-            Vertex v3 = Vertex((x + 1) * conv - 1, (y + 1) * conv - 1, 1);
+            Vertex v3 = Vertex(x       * conv - 1, (y + 1) * conv - 1, 1);
             v1 = v1.norm(); v2 = v2.norm(); v3 = v3.norm();
             weights.push_back(weight * cross(v3 - v1, v2 - v1).len());
         }
