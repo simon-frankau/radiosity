@@ -10,21 +10,19 @@
 
 #include "geom.h"
 
-const int WEIGHT_RESOLUTION = 512;
-
 // Generate a weightings array based on projecting rectangles onto a
 // sphere. Assumes 90 degree field of view.
 //
 // TODO: This doesn't include cos(angle from normal) factor.
-void projWeights(std::vector<GLdouble> &weights)
+void projWeights(int resolution, std::vector<GLdouble> &weights)
 {
     // From -1 to +1.
-    GLdouble conv = 2.0 / WEIGHT_RESOLUTION;
+    GLdouble conv = 2.0 / resolution;
     // Make total come to 1.
     GLdouble weight = 3.0 / (M_PI * 2.0);
 
-    for (int y = 0; y < WEIGHT_RESOLUTION; ++y) {
-        for (int x = 0; x < WEIGHT_RESOLUTION; ++x) {
+    for (int y = 0; y < resolution; ++y) {
+        for (int x = 0; x < resolution; ++x) {
             Vertex v1 = Vertex(x       * conv - 1, y       * conv - 1, 1);
             Vertex v2 = Vertex((x + 1) * conv - 1, y       * conv - 1, 1);
             Vertex v3 = Vertex(x       * conv - 1, (y + 1) * conv - 1, 1);
@@ -37,15 +35,15 @@ void projWeights(std::vector<GLdouble> &weights)
 // Like projWeights, but axis-aligns things first.
 //
 // First step towards doing an analytic version.
-void projWeights2(std::vector<GLdouble> &weights)
+void projWeights2(int resolution, std::vector<GLdouble> &weights)
 {
     // From -1 to +1.
-    GLdouble conv = 2.0 / WEIGHT_RESOLUTION;
+    GLdouble conv = 2.0 / resolution;
     // Make total come to 1.
     GLdouble weight = 3.0 / (M_PI * 2.0);
 
-    for (int y = 0; y < WEIGHT_RESOLUTION; ++y) {
-        for (int x = 0; x < WEIGHT_RESOLUTION; ++x) {
+    for (int y = 0; y < resolution; ++y) {
+        for (int x = 0; x < resolution; ++x) {
             GLdouble px = (x + 0.5) * conv - 1.0;
             GLdouble py = (y + 0.5) * conv - 1.0;
             double dist = sqrt(px * px + py * py);
@@ -59,14 +57,16 @@ void projWeights2(std::vector<GLdouble> &weights)
     }
 }
 
+const int WEIGHT_RESOLUTION = 512;
+
 // Quick test that the integral comes out right.
 //
 // TODO: I should really get some cpp_unit, shouldn't I?
 int main(void)
 {
     std::vector<GLdouble> ws, ws2;
-    projWeights(ws);
-    projWeights2(ws2);
+    projWeights(WEIGHT_RESOLUTION, ws);
+    projWeights2(WEIGHT_RESOLUTION, ws2);
     GLdouble total = 0.0, total2 = 0.0, maxError = 0.0;
     for (int i = 0, n = ws.size(); i < n; ++i) {
         // if (i % WEIGHT_RESOLUTION == 0) std::cout << std::endl;
