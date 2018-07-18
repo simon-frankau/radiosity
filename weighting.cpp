@@ -48,11 +48,12 @@ void projWeights2(int resolution, std::vector<GLdouble> &weights)
             GLdouble py = (y + 0.5) * conv - 1.0;
             double dist = sqrt(px * px + py * py);
 
-            Vertex v1 = Vertex(dist - conv/2, -0.5 * conv, 1);
-            Vertex v2 = Vertex(dist + conv/2, -0.5 * conv, 1);
-            Vertex v3 = Vertex(dist - conv/2,  0.5 * conv, 1);
-            v1 = v1.norm(); v2 = v2.norm(); v3 = v3.norm();
-            weights.push_back(weight * cross(v3 - v1, v2 - v1).len());
+            Vertex v1 = Vertex(dist - conv/2, 0, 1);
+            Vertex v2 = Vertex(dist + conv/2, 0, 1);
+            // When projecting onto sphere, the tangential component is scaled by 1/r.
+            GLdouble origLen = v1.len();
+            v1 = v1.norm(); v2 = v2.norm();
+            weights.push_back(weight * conv * (v2 - v1).len() / origLen);
         }
     }
 }
