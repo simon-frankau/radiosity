@@ -32,10 +32,9 @@ void projWeights(int resolution, std::vector<GLdouble> &weights)
     }
 }
 
-// Like projWeights, but axis-aligns things first.
-//
-// First step towards doing an analytic version.
-void projWeights2(int resolution, std::vector<GLdouble> &weights)
+// Like calcWeights, but generated analytically rather than through
+// finite differences.
+void calcWeights(int resolution, std::vector<GLdouble> &weights)
 {
     // From -1 to +1.
     GLdouble conv = 2.0 / resolution;
@@ -44,15 +43,25 @@ void projWeights2(int resolution, std::vector<GLdouble> &weights)
 
     for (int y = 0; y < resolution; ++y) {
         for (int x = 0; x < resolution; ++x) {
+            // We're calculating how much a pixel at (px, py) occludes
+            // of the unit sphere. We'll axis align it, and calculate
+            // it for (sqrt(distSq), 0) instead:
             GLdouble px = (x + 0.5) * conv - 1.0;
             GLdouble py = (y + 0.5) * conv - 1.0;
-            double dist = sqrt(px * px + py * py);
+            // Distance from centre of projection plane.
+            double distSq = px * px + py * py;
 
-            // When projecting onto sphere, the tangential component is scaled by 1/r.
-            GLdouble origLen = sqrt(1 + dist * dist);
-            // dphi/dx is derivative of arctan, 1/(1 + dist^2).
-            GLdouble dphi_dx = 1.0 / (1.0 + dist*dist);
-            weights.push_back(weight * conv * conv * dphi_dx / origLen);
+            // When we project down from the pixel to the sphere, the
+            // x-axis scaling factor is is derivative of arctan, 1/(1
+            // + dist^2)...
+            GLdouble xFactor = 1.0 / (1.0 + distSq);
+            // and the y-axis factor is just scaled by 1/(distance
+            // from centre of sphere we're projecting onto)
+            // (this is just perspective).
+            GLdouble yFactor = sqrt(xFactor);
+            // And the final calculation, throwing in a couple of
+            // "conv"s to get the scaling factor right.
+            weights.push_back(weight * conv * conv * xFactor * yFactor);
         }
     }
 }
@@ -66,7 +75,7 @@ int main(void)
 {
     std::vector<GLdouble> ws, ws2;
     projWeights(WEIGHT_RESOLUTION, ws);
-    projWeights2(WEIGHT_RESOLUTION, ws2);
+    calcWeights(WEIGHT_RESOLUTION, ws2);
     GLdouble total = 0.0, total2 = 0.0, maxError = 0.0;
     for (int i = 0, n = ws.size(); i < n; ++i) {
         // if (i % WEIGHT_RESOLUTION == 0) std::cout << std::endl;
