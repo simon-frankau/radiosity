@@ -24,14 +24,12 @@
 #include <vector>
 
 #include "geom.h"
+#include "glut_wrap.h"
 
 // TODO: Copied code that should be factored out.
 
 // Brightness of the walls, etc.
 static const GLfloat b = 0.7;
-
-static const int WIDTH = 512;
-static const int HEIGHT = 512;
 
 static const int NUM_CHANS = 4;
 
@@ -159,13 +157,12 @@ void initGL(void)
 
 int main(int argc, char **argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH); // RGB -> RGBA
-    glutInitWindowSize(WIDTH, HEIGHT);
-    glutCreateWindow("Radiosity demo thing");
-    glutDisplayFunc(display);
+    gwInit(&argc, argv);
+
+    // glutDisplayFunc(display);
     initGL();
     initGeometry();
-    glutMainLoop();
+
+    gwRenderOnce(display);
     return 0;
 }

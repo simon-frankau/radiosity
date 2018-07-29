@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "geom.h"
+#include "glut_wrap.h"
 
 const double CONVERGENCE_TARGET = 0.001;
 
@@ -221,9 +222,8 @@ void initGL(void)
 
 int main(int argc, char **argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutCreateWindow("Radiosity demo thing");
+    gwInit(&argc, argv);
+
     glutDisplayFunc(display);
     initGL();
     initGeometry();
