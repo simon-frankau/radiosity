@@ -109,6 +109,24 @@ void Quad::render(std::vector<Vertex> const &v) const
     glEnd();
 }
 
+void Quad::renderIndex(int index, std::vector<Vertex> const &v) const
+{
+    Vertex const &v0 = v[indices[0]];
+    Vertex const &v1 = v[indices[1]];
+    Vertex const &v2 = v[indices[2]];
+    Vertex const &v3 = v[indices[3]];
+    Vertex n = cross(v3 - v0, v1 - v0).norm();
+    glBegin(GL_QUADS);
+    // We're not using that many polys, so skip the low bits.
+    glColor3ub((index << 2) & 0xFC, (index >> 4) & 0xFC, (index >> 10) & 0xFC);
+    glNormal3fv(n.p);
+    glVertex3fv(v0.p);
+    glVertex3fv(v1.p);
+    glVertex3fv(v2.p);
+    glVertex3fv(v3.p);
+    glEnd();
+}
+
 // Break apart the given quad into a bunch of quads, add them to "qs",
 // and add the new vertices to "vs".
 void subdivide(Quad const &quad,

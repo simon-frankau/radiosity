@@ -71,6 +71,8 @@ public:
          GLfloat l);
 
     void render(std::vector<Vertex> const &v) const;
+    // For transfer calculations.
+    void renderIndex(int index, std::vector<Vertex> const &v) const;
 
     GLint indices[4];
     // Does this quad emit light, or just reflect?
