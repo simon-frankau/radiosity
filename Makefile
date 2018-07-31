@@ -14,3 +14,7 @@ bin/weights: weighting.cpp geom.cpp
 bin/transfers: transfers.cpp geom.cpp glut_wrap.cpp
 	mkdir -p bin
 	g++ -std=c++11 -framework GLUT -framework OpenGL $^ -O2 -o $@
+
+bin/test: test.cpp
+	mkdir -p bin
+	g++ -std=c++11 -l cppunit -framework GLUT -framework OpenGL $^ -O2 -o $@
