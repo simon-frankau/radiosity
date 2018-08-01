@@ -28,44 +28,27 @@
 
 static const int NUM_CHANS = 4;
 
-std::vector<Quad> faces;
-std::vector<Vertex> vertices;
+static std::vector<int> weights;
 
-// Subdivide the faces
-void initGeometry(void)
+static void render(void)
 {
-    vertices = cubeVertices;
-    for (std::vector<Quad>::const_iterator iter = cubeFaces.begin(),
-             end = cubeFaces.end(); iter != end; ++iter) {
-        subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
-    }
-}
-
-void drawBox(void)
-{
-    for (int i = 0, n = faces.size(); i < n; ++i) {
-        faces[i].renderIndex(i, vertices);
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        cubeFaces[i].renderIndex(i, cubeVertices);
     }
 }
 
 static void getWeights()
 {
+    weights.clear();
+    weights.resize(cubeFaces.size());
     std::vector<GLubyte> pixels(NUM_CHANS * WIDTH * HEIGHT);
     glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
     for (int i = 0, n = pixels.size(); i < n; i += 4) {
         // We're not using that many polys, so skip the low bits.
-        int index = pixels[i] + (pixels[i+1] << 6) + (pixels[i+2] << 12);
-        std::cout << index/4 << std::endl;
+        int index = (pixels[i] + (pixels[i+1] << 6) + (pixels[i+2] << 12)) >> 2;
+        weights[index]++;
     }
-}
-
-void display(void)
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    drawBox();
-    getWeights();
-    glutSwapBuffers();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -105,25 +88,43 @@ void viewDown(void)
     glRotated(+90.0, 1.0, 0.0, 0.0);
 }
 
+typedef void (*viewFn_t)();
 
-void initGL(void)
+viewFn_t viewFn;
+
+viewFn_t viewFns[] = {
+    viewFront, viewBack, viewRight, viewLeft, viewUp, viewDown
+};
+
+void display(void)
 {
-    gwTransferSetup();
     glMatrixMode(GL_MODELVIEW);
-    viewBack();
+    glLoadIdentity();
+    viewFn();
     gluLookAt(0.0, 0.0, 0.0, // Eye position
               0.0, 0.0, -1.0, // Looking at
               0.0, 1.0, 0.0); // Up is in positive Y direction
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    render();
+    getWeights();
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        std::cout << i << ": " << weights[i] << std::endl;
+        cubeFaces[i].renderIndex(i, cubeVertices);
+    }
+
+    glutSwapBuffers();
 }
 
 int main(int argc, char **argv)
 {
     gwInit(&argc, argv);
-
-    // glutDisplayFunc(display);
-    initGL();
-    initGeometry();
-
-    gwRenderOnce(display);
+    gwTransferSetup();
+    // Horrible...
+    for (int i=0; i < sizeof(viewFns)/sizeof(viewFns[0]); ++i) {
+        viewFn = viewFns[i];
+        // display();
+        gwRenderOnce(display);
+    }
     return 0;
 }
