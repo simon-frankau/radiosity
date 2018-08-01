@@ -146,39 +146,18 @@ double calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 ////////////////////////////////////////////////////////////////////////
 // And the main rendering bit...
 
-// Brightness of the walls, etc.
-const GLfloat b = 0.7;
-
-// Vertex indices for the 6 faces of a cube.
-std::vector<Quad> origFaces = {
-    Quad(1, 0, 2, 3, b), Quad(3, 2, 6, 7, b), Quad(7, 6, 4, 5, b),
-    Quad(5, 4, 0, 1, b), Quad(4, 6, 2, 0, b), Quad(7, 5, 1, 3, b)
-};
-
-// Will be initialised with the subdivided faces.
-std::vector<Quad> faces;
-
-// Vector of vertices will grow with new vertices, this is just the
-// initial set defined for the initial cube.
-std::vector<Vertex> vertices = {
-    Vertex(-1, -1, -1),
-    Vertex(-1, -1, +1),
-    Vertex(-1, +1, -1),
-    Vertex(-1, +1, +1),
-    Vertex(+1, -1, -1),
-    Vertex(+1, -1, +1),
-    Vertex(+1, +1, -1),
-    Vertex(+1, +1, +1),
-};
-
+// Geometry.
+static std::vector<Quad> faces;
+static std::vector<Vertex> vertices;
 // Array of quad-to-quad light transfers.
-std::vector<GLfloat> transfers;
+static std::vector<GLfloat> transfers;
 
 // Subdivide the faces
 void initGeometry(void)
 {
-    for (std::vector<Quad>::const_iterator iter = origFaces.begin(),
-             end = origFaces.end(); iter != end; ++iter) {
+    vertices = cubeVertices;
+    for (std::vector<Quad>::const_iterator iter = cubeFaces.begin(),
+             end = cubeFaces.end(); iter != end; ++iter) {
         subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
     }
 }

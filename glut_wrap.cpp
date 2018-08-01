@@ -26,6 +26,27 @@ void gwInit(int *argc, char **argv)
     glutCreateWindow("Radiosity demo thing");
 }
 
+void gwTransferSetup()
+{
+    // Flat shading.
+    glEnable(GL_COLOR_MATERIAL);
+    // Use depth buffering for hidden surface elimination.
+    glEnable(GL_DEPTH_TEST);
+    // Back-face culling.
+    glEnable(GL_CULL_FACE);
+    // To read from the scene...
+    glReadBuffer(GL_BACK);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    // Set up the view to be one face of the cube-map.
+    glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    gluPerspective(90.0,  // Field of view in degrees
+                   1.0,   // Aspect ratio
+                   0.1,   // Z near
+                   10.0); // Z far
+}
+
 // Not re-entrant but I don't think GLUT is.
 static void (*dispFn)() = NULL;
 

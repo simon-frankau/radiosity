@@ -161,3 +161,25 @@ void subdivide(Quad const &quad,
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////
+// Basic shapes.
+
+// Brightness of the walls, etc.
+static const GLfloat B = 0.7;
+
+std::vector<Quad> const cubeFaces = {
+    Quad(1, 0, 2, 3, B), Quad(3, 2, 6, 7, B), Quad(7, 6, 4, 5, B),
+    Quad(5, 4, 0, 1, B), Quad(4, 6, 2, 0, B), Quad(7, 5, 1, 3, B)
+};
+
+std::vector<Vertex> const cubeVertices = {
+    Vertex(-1, -1, -1),
+    Vertex(-1, -1, +1),
+    Vertex(-1, +1, -1),
+    Vertex(-1, +1, +1),
+    Vertex(+1, -1, -1),
+    Vertex(+1, -1, +1),
+    Vertex(+1, +1, -1),
+    Vertex(+1, +1, +1),
+};

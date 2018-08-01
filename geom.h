@@ -90,4 +90,10 @@ void subdivide(Quad const &quad,
                std::vector<Quad> &qs,
                GLint uCount, GLint vCount);
 
+////////////////////////////////////////////////////////////////////////
+// Basic shapes.
+
+extern std::vector<Vertex> const cubeVertices;
+extern std::vector<Quad>   const cubeFaces;
+
 #endif // RADIOSITY_GEOM_H

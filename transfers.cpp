@@ -26,40 +26,17 @@
 #include "geom.h"
 #include "glut_wrap.h"
 
-// TODO: Copied code that should be factored out.
-
-// Brightness of the walls, etc.
-static const GLfloat b = 0.7;
-
 static const int NUM_CHANS = 4;
 
-// Vertex indices for the 6 faces of a cube.
-std::vector<Quad> origFaces = {
-    Quad(1, 0, 2, 3, b), Quad(3, 2, 6, 7, b), Quad(7, 6, 4, 5, b),
-    Quad(5, 4, 0, 1, b), Quad(4, 6, 2, 0, b), Quad(7, 5, 1, 3, b)
-};
-
-// Will be initialised with the subdivided faces.
 std::vector<Quad> faces;
-
-// Vector of vertices will grow with new vertices, this is just the
-// initial set defined for the initial cube.
-std::vector<Vertex> vertices = {
-    Vertex(-1, -1, -1),
-    Vertex(-1, -1, +1),
-    Vertex(-1, +1, -1),
-    Vertex(-1, +1, +1),
-    Vertex(+1, -1, -1),
-    Vertex(+1, -1, +1),
-    Vertex(+1, +1, -1),
-    Vertex(+1, +1, +1),
-};
+std::vector<Vertex> vertices;
 
 // Subdivide the faces
 void initGeometry(void)
 {
-    for (std::vector<Quad>::const_iterator iter = origFaces.begin(),
-             end = origFaces.end(); iter != end; ++iter) {
+    vertices = cubeVertices;
+    for (std::vector<Quad>::const_iterator iter = cubeFaces.begin(),
+             end = cubeFaces.end(); iter != end; ++iter) {
         subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
     }
 }
@@ -131,28 +108,12 @@ void viewDown(void)
 
 void initGL(void)
 {
-    // Flat shading.
-    glEnable(GL_COLOR_MATERIAL);
-    // Use depth buffering for hidden surface elimination.
-    glEnable(GL_DEPTH_TEST);
-    // Back-face culling.
-    glEnable(GL_CULL_FACE);
-    // To read from the scene...
-    glReadBuffer(GL_BACK);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    // Setup the view of the cube. Will become a view from inside the
-    // cube.
-    glMatrixMode(GL_PROJECTION);
-    gluPerspective(90.0,  // Field of view in degrees
-                   1.0,   // Aspect ratio
-                   0.1,   // Z near
-                   10.0); // Z far
+    gwTransferSetup();
     glMatrixMode(GL_MODELVIEW);
     viewBack();
     gluLookAt(0.0, 0.0, 0.0, // Eye position
               0.0, 0.0, -1.0, // Looking at
-              0.0, 1.0, 0.); // Up is in positive Y direction
+              0.0, 1.0, 0.0); // Up is in positive Y direction
 }
 
 int main(int argc, char **argv)
