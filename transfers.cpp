@@ -26,21 +26,81 @@
 #include "geom.h"
 #include "glut_wrap.h"
 
+////////////////////////////////////////////////////////////////////////
+// Functions to face in cube map directions
+//
+
+static void viewFront(void)
+{
+    // Don't need to do anything to look forward
+}
+
+static void viewBack(void)
+{
+    glRotated(180.0, 0.0, 1.0, 0.0);
+}
+
+static void viewRight(void)
+{
+    glRotated(-90.0, 0.0, 0.0, 1.0);
+    glRotated(+90.0, 0.0, 1.0, 0.0);
+}
+
+static void viewLeft(void)
+{
+    glRotated(+90.0, 0.0, 0.0, 1.0);
+    glRotated(-90.0, 0.0, 1.0, 0.0);
+}
+
+static void viewUp(void)
+{
+    glRotated(180.0, 0.0, 0.0, 1.0);
+    glRotated(-90.0, 1.0, 0.0, 0.0);
+}
+
+static void viewDown(void)
+{
+    glRotated(+90.0, 1.0, 0.0, 0.0);
+}
+
+typedef void (*viewFn_t)();
+
+static viewFn_t viewFns[] = {
+    viewFront, viewBack, viewRight, viewLeft, viewUp, viewDown
+};
+
+////////////////////////////////////////////////////////////////////////
+// Class that holds all the bits to do transfer calculations.
+//
+
+class TransferCalculator
+{
+public:
+    TransferCalculator(std::vector<Vertex> const &vertices,
+                       std::vector<Quad> const &faces)
+        : m_vertices(vertices), m_faces(faces)
+    {
+    }
+
+private:
+    std::vector<Vertex> const &m_vertices;
+    std::vector<Quad> const &m_faces;
+
 static const int NUM_CHANS = 4;
 
-static std::vector<int> weights;
+std::vector<int> weights;
 
-static void render(void)
+void render(void)
 {
-    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        cubeFaces[i].renderIndex(i, cubeVertices);
+    for (int i = 0, n = m_faces.size(); i < n; ++i) {
+        m_faces[i].renderIndex(i, m_vertices);
     }
 }
 
-static void getWeights()
+void getWeights()
 {
     weights.clear();
-    weights.resize(cubeFaces.size());
+    weights.resize(m_faces.size());
     std::vector<GLubyte> pixels(NUM_CHANS * WIDTH * HEIGHT);
     glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
@@ -51,60 +111,12 @@ static void getWeights()
     }
 }
 
-////////////////////////////////////////////////////////////////////////
-// TODO: Render the view in multiple directions - make a cube map.
-
-void viewFront(void)
-{
-    // Don't need to do anything to look forward
-}
-
-void viewBack(void)
-{
-    glRotated(180.0, 0.0, 1.0, 0.0);
-    // Don't need to do anything to look forward
-}
-
-void viewRight(void)
-{
-    glRotated(-90.0, 0.0, 0.0, 1.0);
-    glRotated(+90.0, 0.0, 1.0, 0.0);
-}
-
-void viewLeft(void)
-{
-    glRotated(+90.0, 0.0, 0.0, 1.0);
-    glRotated(-90.0, 0.0, 1.0, 0.0);
-}
-
-void viewUp(void)
-{
-    glRotated(180.0, 0.0, 0.0, 1.0);
-    glRotated(-90.0, 1.0, 0.0, 0.0);
-}
-
-void viewDown(void)
-{
-    glRotated(+90.0, 1.0, 0.0, 0.0);
-}
-
-typedef void (*viewFn_t)();
-
-viewFn_t viewFn;
-
-viewFn_t viewFns[] = {
-    viewFront, viewBack, viewRight, viewLeft, viewUp, viewDown
-};
-
-void display(void)
+public:
+void calcFace(viewFn_t view)
 {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    viewFn();
-    gluLookAt(0.0, 0.0, 0.0, // Eye position
-              0.0, 0.0, -1.0, // Looking at
-              0.0, 1.0, 0.0); // Up is in positive Y direction
-
+    view();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     render();
     getWeights();
@@ -112,19 +124,27 @@ void display(void)
         std::cout << i << ": " << weights[i] << std::endl;
         cubeFaces[i].renderIndex(i, cubeVertices);
     }
-
     glutSwapBuffers();
 }
+};
 
 int main(int argc, char **argv)
 {
     gwInit(&argc, argv);
     gwTransferSetup();
+    TransferCalculator tc(cubeVertices, cubeFaces);
     // Horrible...
     for (int i=0; i < sizeof(viewFns)/sizeof(viewFns[0]); ++i) {
-        viewFn = viewFns[i];
-        // display();
-        gwRenderOnce(display);
+        tc.calcFace(viewFns[i]);
     }
     return 0;
 }
+
+// TODO:
+//  * Pull methods out of class definition
+//  * Do weighting over the scene
+//  * Put weight calculation (and full-scene weight calculation) into
+//    the class
+//  * Build unit tests checking the sanity of the results.
+//  * Extend unit tests to try different scene rotations and see
+//    how it goes.
