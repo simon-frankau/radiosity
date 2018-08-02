@@ -25,6 +25,7 @@
 
 #include "geom.h"
 #include "glut_wrap.h"
+#include "weighting.h"
 
 ////////////////////////////////////////////////////////////////////////
 // Functions to face in cube map directions
@@ -77,18 +78,22 @@ class TransferCalculator
 {
 public:
     TransferCalculator(std::vector<Vertex> const &vertices,
-                       std::vector<Quad> const &faces)
-        : m_vertices(vertices), m_faces(faces)
+                       std::vector<Quad> const &faces,
+                       std::vector<double> const &weights)
+        : m_vertices(vertices), m_faces(faces), m_weights(weights)
     {
     }
 
 private:
+    // Geometry.
     std::vector<Vertex> const &m_vertices;
     std::vector<Quad> const &m_faces;
+    // Weighting tables to use.
+    std::vector<double> const &m_weights;
+    // Sums being calculated.
+    std::vector<double> m_sums;
 
 static const int NUM_CHANS = 4;
-
-std::vector<int> weights;
 
 void render(void)
 {
@@ -99,15 +104,15 @@ void render(void)
 
 void getWeights()
 {
-    weights.clear();
-    weights.resize(m_faces.size());
+    m_sums.clear();
+    m_sums.resize(m_faces.size());
     std::vector<GLubyte> pixels(NUM_CHANS * WIDTH * HEIGHT);
     glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
     for (int i = 0, n = pixels.size(); i < n; i += 4) {
         // We're not using that many polys, so skip the low bits.
         int index = (pixels[i] + (pixels[i+1] << 6) + (pixels[i+2] << 12)) >> 2;
-        weights[index]++;
+        m_sums[index] += m_weights[i/4];
     }
 }
 
@@ -121,7 +126,7 @@ void calcFace(viewFn_t view)
     render();
     getWeights();
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        std::cout << i << ": " << weights[i] << std::endl;
+        std::cout << i << ": " << m_sums[i] << std::endl;
         cubeFaces[i].renderIndex(i, cubeVertices);
     }
     glutSwapBuffers();
@@ -132,7 +137,9 @@ int main(int argc, char **argv)
 {
     gwInit(&argc, argv);
     gwTransferSetup();
-    TransferCalculator tc(cubeVertices, cubeFaces);
+    std::vector<double> weights;
+    calcWeights(WIDTH, weights);
+    TransferCalculator tc(cubeVertices, cubeFaces, weights);
     // Horrible...
     for (int i=0; i < sizeof(viewFns)/sizeof(viewFns[0]); ++i) {
         tc.calcFace(viewFns[i]);

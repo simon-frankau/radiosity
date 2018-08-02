@@ -7,7 +7,7 @@ bin/cube: cube.cpp geom.cpp glut_wrap.cpp
 	mkdir -p bin
 	g++ -std=c++11 -framework GLUT -framework OpenGL $^ -O2 -o $@
 
-bin/transfers: transfers.cpp geom.cpp glut_wrap.cpp
+bin/transfers: transfers.cpp geom.cpp glut_wrap.cpp weighting.cpp
 	mkdir -p bin
 	g++ -std=c++11 -framework GLUT -framework OpenGL $^ -O2 -o $@
 
