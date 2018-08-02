@@ -25,6 +25,7 @@
 
 #include "geom.h"
 #include "glut_wrap.h"
+#include "transfers.h"
 #include "weighting.h"
 
 ////////////////////////////////////////////////////////////////////////
@@ -64,9 +65,7 @@ static void viewDown(void)
     glRotated(+90.0, 1.0, 0.0, 0.0);
 }
 
-typedef void (*viewFn_t)();
-
-static viewFn_t viewFns[] = {
+static TransferCalculator::viewFn_t viewFns[] = {
     viewFront, viewBack, viewRight, viewLeft, viewUp, viewDown
 };
 
@@ -74,35 +73,23 @@ static viewFn_t viewFns[] = {
 // Class that holds all the bits to do transfer calculations.
 //
 
-class TransferCalculator
+TransferCalculator::TransferCalculator(std::vector<Vertex> const &vertices,
+                                       std::vector<Quad> const &faces,
+                                       std::vector<double> const &weights)
+    : m_vertices(vertices), m_faces(faces), m_weights(weights)
 {
-public:
-    TransferCalculator(std::vector<Vertex> const &vertices,
-                       std::vector<Quad> const &faces,
-                       std::vector<double> const &weights)
-        : m_vertices(vertices), m_faces(faces), m_weights(weights)
-    {
-    }
+}
 
-private:
-    // Geometry.
-    std::vector<Vertex> const &m_vertices;
-    std::vector<Quad> const &m_faces;
-    // Weighting tables to use.
-    std::vector<double> const &m_weights;
-    // Sums being calculated.
-    std::vector<double> m_sums;
-
-static const int NUM_CHANS = 4;
-
-void render(void)
+void TransferCalculator::render(void)
 {
     for (int i = 0, n = m_faces.size(); i < n; ++i) {
         m_faces[i].renderIndex(i, m_vertices);
     }
 }
 
-void getWeights()
+static const int NUM_CHANS = 4;
+
+void TransferCalculator::sumWeights()
 {
     m_sums.clear();
     m_sums.resize(m_faces.size());
@@ -116,15 +103,14 @@ void getWeights()
     }
 }
 
-public:
-void calcFace(viewFn_t view)
+void TransferCalculator::calcFace(viewFn_t view)
 {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     view();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     render();
-    getWeights();
+    sumWeights();
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
         std::cout << i << ": " << m_sums[i] << std::endl;
         cubeFaces[i].renderIndex(i, cubeVertices);
@@ -132,29 +118,17 @@ void calcFace(viewFn_t view)
     glutSwapBuffers();
 }
 
-void calcCube()
+void TransferCalculator::calcCube()
 {
     // Horrible...
     for (int i=0; i < sizeof(viewFns)/sizeof(viewFns[0]); ++i) {
         calcFace(viewFns[i]);
     }
 }
-};
-
-// TODO: Temporarily simplify header
-void calcCube(std::vector<Vertex> const &vertices,
-              std::vector<Quad> const &faces,
-              std::vector<double> const &weights)
-{
-    TransferCalculator tc(vertices, faces, weights);
-    tc.calcCube();
-}
 
 // TODO:
-//  * Pull methods out of class definition
-//  * Do weighting over the scene
-//  * Put weight calculation (and full-scene weight calculation) into
-//    the class
 //  * Build unit tests checking the sanity of the results.
 //  * Extend unit tests to try different scene rotations and see
 //    how it goes.
+//  * Resizable rendering.
+//  * Incoming light calculations.

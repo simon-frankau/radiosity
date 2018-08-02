@@ -10,6 +10,7 @@
 
 #include "geom.h"
 #include "glut_wrap.h"
+#include "transfers.h"
 #include "weighting.h"
 
 class TransfersTestCase : public CppUnit::TestCase
@@ -35,5 +36,6 @@ void TransfersTestCase::eachFaceIsAreaOne()
     gwTransferSetup();
     std::vector<double> weights;
     calcWeights(WIDTH, weights);
-    calcCube(cubeVertices, cubeFaces, weights);
+    TransferCalculator tc(cubeVertices, cubeFaces, weights);
+    tc.calcCube();
 }
