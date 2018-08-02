@@ -120,10 +120,12 @@ void TransferCalculator::calcFace(viewFn_t view)
 
 void TransferCalculator::calcCube()
 {
-    // Horrible...
-    for (int i=0; i < sizeof(viewFns)/sizeof(viewFns[0]); ++i) {
-        calcFace(viewFns[i]);
-    }
+    calcFace(viewFront);
+    calcFace(viewBack);
+    calcFace(viewRight);
+    calcFace(viewLeft);
+    calcFace(viewUp);
+    calcFace(viewDown);
 }
 
 // TODO:
