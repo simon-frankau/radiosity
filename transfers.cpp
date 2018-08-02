@@ -131,20 +131,23 @@ void calcFace(viewFn_t view)
     }
     glutSwapBuffers();
 }
-};
 
-int main(int argc, char **argv)
+void calcCube()
 {
-    gwInit(&argc, argv);
-    gwTransferSetup();
-    std::vector<double> weights;
-    calcWeights(WIDTH, weights);
-    TransferCalculator tc(cubeVertices, cubeFaces, weights);
     // Horrible...
     for (int i=0; i < sizeof(viewFns)/sizeof(viewFns[0]); ++i) {
-        tc.calcFace(viewFns[i]);
+        calcFace(viewFns[i]);
     }
-    return 0;
+}
+};
+
+// TODO: Temporarily simplify header
+void calcCube(std::vector<Vertex> const &vertices,
+              std::vector<Quad> const &faces,
+              std::vector<double> const &weights)
+{
+    TransferCalculator tc(vertices, faces, weights);
+    tc.calcCube();
 }
 
 // TODO:

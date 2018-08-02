@@ -13,6 +13,8 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "glut_wrap.h"
+
 CppUnit::Test *suite()
 {
     CppUnit::TestFactoryRegistry &registry =
@@ -20,12 +22,16 @@ CppUnit::Test *suite()
 
     registry.registerFactory(
         &CppUnit::TestFactoryRegistry::getRegistry("WeightingTestCase"));
+    registry.registerFactory(
+        &CppUnit::TestFactoryRegistry::getRegistry("TransfersTestCase"));
 
     return registry.makeTest();
 }
 
 int main(int argc, char* argv[])
 {
+    gwInit(&argc, argv);
+
     // if command line contains "-selftest" then this is the post build check
     // => the output must be in the compiler error format.
     bool selfTest = (argc > 1) && (std::string("-selftest") == argv[1]);

@@ -2,7 +2,7 @@
 //
 // weighting_test.cpp: Tests for weighting.cpp.
 //
-// Copyright (c) Simon Frankaus 2018
+// Copyright (c) Simon Frankau 2018
 //
 
 #include <cmath>
