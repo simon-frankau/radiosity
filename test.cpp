@@ -5,6 +5,12 @@
 // Copyright (c) Simon Frankaus 2018
 //
 
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
+
 #include <cmath>
 #include <memory>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -30,7 +36,7 @@ CppUnit::Test *suite()
 
 int main(int argc, char* argv[])
 {
-    gwInit(&argc, argv);
+    glutInit(&argc, argv);
 
     // if command line contains "-selftest" then this is the post build check
     // => the output must be in the compiler error format.

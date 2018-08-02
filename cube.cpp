@@ -201,7 +201,10 @@ void initGL(void)
 
 int main(int argc, char **argv)
 {
-    gwInit(&argc, argv);
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+    glutInitWindowSize(512, 512);
+    glutCreateWindow("Radiosity demo");
 
     glutDisplayFunc(display);
     initGL();

@@ -18,16 +18,12 @@
 
 #include "glut_wrap.h"
 
-void gwInit(int *argc, char **argv)
+int gwTransferSetup(int size)
 {
-    glutInit(argc, argv);
+    // Configure window
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-    glutInitWindowSize(WIDTH, HEIGHT);
-    glutCreateWindow("Radiosity demo thing");
-}
-
-void gwTransferSetup()
-{
+    glutInitWindowSize(size, size);
+    int win = glutCreateWindow("Transfer calculator");
     // Flat shading.
     glEnable(GL_COLOR_MATERIAL);
     // Use depth buffering for hidden surface elimination.
@@ -45,6 +41,8 @@ void gwTransferSetup()
                    1.0,   // Aspect ratio
                    0.1,   // Z near
                    10.0); // Z far
+
+    return win;
 }
 
 // Not re-entrant but I don't think GLUT is.

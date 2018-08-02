@@ -65,21 +65,28 @@ static void viewDown(void)
     glRotated(+90.0, 1.0, 0.0, 0.0);
 }
 
-static TransferCalculator::viewFn_t viewFns[] = {
-    viewFront, viewBack, viewRight, viewLeft, viewUp, viewDown
-};
-
 ////////////////////////////////////////////////////////////////////////
 // Class that holds all the bits to do transfer calculations.
 //
 
 TransferCalculator::TransferCalculator(std::vector<Vertex> const &vertices,
                                        std::vector<Quad> const &faces,
+                                       int resolution,
                                        std::vector<double> const &weights)
-    : m_vertices(vertices), m_faces(faces), m_weights(weights)
+    : m_vertices(vertices),
+      m_faces(faces),
+      m_resolution(resolution),
+      m_win(gwTransferSetup(resolution)),
+      m_weights(weights)
 {
 }
 
+TransferCalculator::~TransferCalculator()
+{
+    glutDestroyWindow(m_win);
+}
+
+// Extremely simple rendering of the scene.
 void TransferCalculator::render(void)
 {
     for (int i = 0, n = m_faces.size(); i < n; ++i) {
@@ -89,12 +96,11 @@ void TransferCalculator::render(void)
 
 static const int NUM_CHANS = 4;
 
+// Sum up value of the pixels, with the given weights.
 void TransferCalculator::sumWeights()
 {
-    m_sums.clear();
-    m_sums.resize(m_faces.size());
-    std::vector<GLubyte> pixels(NUM_CHANS * WIDTH * HEIGHT);
-    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
+    std::vector<GLubyte> pixels(NUM_CHANS * m_resolution * m_resolution);
+    glReadPixels(0, 0, m_resolution, m_resolution, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
     for (int i = 0, n = pixels.size(); i < n; i += 4) {
         // We're not using that many polys, so skip the low bits.
@@ -103,6 +109,7 @@ void TransferCalculator::sumWeights()
     }
 }
 
+// Work out contributions from the given face.
 void TransferCalculator::calcFace(viewFn_t view)
 {
     glMatrixMode(GL_MODELVIEW);
@@ -111,25 +118,26 @@ void TransferCalculator::calcFace(viewFn_t view)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     render();
     sumWeights();
-    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        std::cout << i << ": " << m_sums[i] << std::endl;
-        cubeFaces[i].renderIndex(i, cubeVertices);
-    }
     glutSwapBuffers();
 }
 
-void TransferCalculator::calcCube()
+// Calculate the sum of the weights across a whole cube map.
+std::vector<double> TransferCalculator::calcCube()
 {
+    m_sums.clear();
+    m_sums.resize(m_faces.size());
+
     calcFace(viewFront);
     calcFace(viewBack);
     calcFace(viewRight);
     calcFace(viewLeft);
     calcFace(viewUp);
     calcFace(viewDown);
+
+    return m_sums;
 }
 
 // TODO:
-//  * Build unit tests checking the sanity of the results.
 //  * Extend unit tests to try different scene rotations and see
 //    how it goes.
 //  * Resizable rendering.

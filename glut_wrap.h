@@ -18,15 +18,8 @@
 #include <GL/glut.h>
 #endif
 
-static const int WIDTH = 512;
-static const int HEIGHT = 512;
-
-// Program start-up init.
-void gwInit(int *argc, char **argv);
-
-// Set the flags etc. up for rendering a cube map.
-void gwTransferSetup();
-
+// Set the flags etc. up for rendering a cube map. Returns window id.
+int gwTransferSetup(int size);
 
 // Run the display function a single time, entering and leaving the
 // event loop. It might be possible to draw this outside the event
