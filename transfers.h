@@ -16,19 +16,20 @@ class TransferCalculator
 public:
     TransferCalculator(std::vector<Vertex> const &vertices,
                        std::vector<Quad> const &faces,
-                       int resolution,
-                       std::vector<double> const &weights);
+                       int resolution);
 
     virtual ~TransferCalculator();
 
-    std::vector<double> calcCube();
+    std::vector<double> calcSubtended();
 
 private:
     typedef void (*viewFn_t)();
 
     void render(void);
-    void sumWeights();
-    void calcFace(viewFn_t view);
+    void sumWeights(std::vector<double> const &weights);
+    void calcFace(viewFn_t view, std::vector<double> const &weights);
+
+    std::vector<double> const &getSubtendWeights();
 
     // Geometry.
     std::vector<Vertex> const &m_vertices;
@@ -38,8 +39,9 @@ private:
     // Window id.
     int const m_win;
 
-    // Weighting tables to use.
-    std::vector<double> const &m_weights;
+    // Weighting tables for area subtended calculations
+    std::vector<double> m_subtendWeights;
+
     // Sums being calculated.
     std::vector<double> m_sums;
 };

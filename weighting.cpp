@@ -15,7 +15,7 @@
 // sphere. Assumes 90 degree field of view.
 //
 // TODO: This doesn't include cos(angle from normal) factor.
-void projWeights(int resolution, std::vector<double> &weights)
+void projSubtendWeights(int resolution, std::vector<double> &weights)
 {
     // From -1 to +1.
     double conv = 2.0 / resolution;
@@ -33,9 +33,9 @@ void projWeights(int resolution, std::vector<double> &weights)
     }
 }
 
-// Like calcWeights, but generated analytically rather than through
+// Like calcSubtendWeights, but generated analytically rather than through
 // finite differences.
-void calcWeights(int resolution, std::vector<double> &weights)
+void calcSubtendWeights(int resolution, std::vector<double> &weights)
 {
     // From -1 to +1.
     double conv = 2.0 / resolution;

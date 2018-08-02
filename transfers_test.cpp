@@ -33,10 +33,8 @@ extern void calcCube(std::vector<Vertex> const &vertices,
 
 void TransfersTestCase::eachFaceIsAreaOne()
 {
-    std::vector<double> weights;
-    calcWeights(RESOLUTION, weights);
-    TransferCalculator tc(cubeVertices, cubeFaces, RESOLUTION, weights);
-    std::vector<double> sums = tc.calcCube();
+    TransferCalculator tc(cubeVertices, cubeFaces, RESOLUTION);
+    std::vector<double> sums = tc.calcSubtended();
     for (int i = 0; i < sums.size(); ++i) {
         CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, sums[i], 1.0e-6);
     }

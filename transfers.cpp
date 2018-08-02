@@ -71,13 +71,11 @@ static void viewDown(void)
 
 TransferCalculator::TransferCalculator(std::vector<Vertex> const &vertices,
                                        std::vector<Quad> const &faces,
-                                       int resolution,
-                                       std::vector<double> const &weights)
+                                       int resolution)
     : m_vertices(vertices),
       m_faces(faces),
       m_resolution(resolution),
-      m_win(gwTransferSetup(resolution)),
-      m_weights(weights)
+      m_win(gwTransferSetup(resolution))
 {
 }
 
@@ -97,7 +95,7 @@ void TransferCalculator::render(void)
 static const int NUM_CHANS = 4;
 
 // Sum up value of the pixels, with the given weights.
-void TransferCalculator::sumWeights()
+void TransferCalculator::sumWeights(std::vector<double> const &weights)
 {
     std::vector<GLubyte> pixels(NUM_CHANS * m_resolution * m_resolution);
     glReadPixels(0, 0, m_resolution, m_resolution, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
@@ -105,37 +103,48 @@ void TransferCalculator::sumWeights()
     for (int i = 0, n = pixels.size(); i < n; i += 4) {
         // We're not using that many polys, so skip the low bits.
         int index = (pixels[i] + (pixels[i+1] << 6) + (pixels[i+2] << 12)) >> 2;
-        m_sums[index] += m_weights[i/4];
+        m_sums[index] += weights[i/4];
     }
 }
 
 // Work out contributions from the given face.
-void TransferCalculator::calcFace(viewFn_t view)
+void TransferCalculator::calcFace(viewFn_t view, std::vector<double> const &weights)
 {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     view();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     render();
-    sumWeights();
+    sumWeights(weights);
     glutSwapBuffers();
 }
 
-// Calculate the sum of the weights across a whole cube map.
-std::vector<double> TransferCalculator::calcCube()
+// Calculate the the area subtended by the faces, using a cube map.
+std::vector<double> TransferCalculator::calcSubtended()
 {
     m_sums.clear();
     m_sums.resize(m_faces.size());
 
-    calcFace(viewFront);
-    calcFace(viewBack);
-    calcFace(viewRight);
-    calcFace(viewLeft);
-    calcFace(viewUp);
-    calcFace(viewDown);
+    std::vector<double> const &ws = getSubtendWeights();
+
+    calcFace(viewFront, ws);
+    calcFace(viewBack,  ws);
+    calcFace(viewRight, ws);
+    calcFace(viewLeft,  ws);
+    calcFace(viewUp,    ws);
+    calcFace(viewDown,  ws);
 
     return m_sums;
 }
+
+std::vector<double> const &TransferCalculator::getSubtendWeights()
+{
+    if (m_subtendWeights.empty()) {
+        calcSubtendWeights(m_resolution, m_subtendWeights);
+    }
+    return m_subtendWeights;
+}
+
 
 // TODO:
 //  * Extend unit tests to try different scene rotations and see
