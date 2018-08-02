@@ -27,6 +27,8 @@ CppUnit::Test *suite()
         CppUnit::TestFactoryRegistry::getRegistry();
 
     registry.registerFactory(
+        &CppUnit::TestFactoryRegistry::getRegistry("GeomTestCase"));
+    registry.registerFactory(
         &CppUnit::TestFactoryRegistry::getRegistry("WeightingTestCase"));
     registry.registerFactory(
         &CppUnit::TestFactoryRegistry::getRegistry("TransfersTestCase"));

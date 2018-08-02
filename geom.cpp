@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////////
 // Vertex
 
-Vertex::Vertex(GLfloat ix, GLfloat iy, GLfloat iz)
+Vertex::Vertex(double ix, double iy, double iz)
     : p {ix, iy, iz}
 {
 }
@@ -34,14 +34,14 @@ Vertex::Vertex(Vertex const &v)
 {
 }
 
-GLfloat Vertex::len() const
+double Vertex::len() const
 {
     return std::sqrt(x() * x() + y() * y() + z() * z());
 }
 
 Vertex Vertex::norm() const
 {
-    GLfloat l = len();
+    double l = len();
     return Vertex(x() / l, y() / l, z() / l);
 }
 
@@ -50,9 +50,9 @@ Vertex Vertex::operator-(Vertex const &rhs) const
     return Vertex(x() - rhs.x(), y() - rhs.y(), z() - rhs.z());
 }
 
-GLfloat Vertex::x() const { return p[0]; }
-GLfloat Vertex::y() const { return p[1]; }
-GLfloat Vertex::z() const { return p[2]; }
+double Vertex::x() const { return p[0]; }
+double Vertex::y() const { return p[1]; }
+double Vertex::z() const { return p[2]; }
 
 std::ostream &operator<<(std::ostream &os, Vertex const &v)
 {
@@ -68,7 +68,7 @@ Vertex cross(Vertex const &v1, Vertex const &v2)
 }
 
 // Dot product.
-GLfloat dot(Vertex const &v1, Vertex const &v2)
+double dot(Vertex const &v1, Vertex const &v2)
 {
     return v1.x() * v2.x()
          + v1.y() * v2.y()
@@ -76,9 +76,9 @@ GLfloat dot(Vertex const &v1, Vertex const &v2)
 }
 
 // Linear interpolation. 0 returns v1, 1 returns v2.
-Vertex lerp(Vertex const &v1, Vertex const &v2, GLfloat i)
+Vertex lerp(Vertex const &v1, Vertex const &v2, double i)
 {
-    GLfloat j = 1.0 - i;
+    double j = 1.0 - i;
     return Vertex(v1.x() * j + v2.x() * i,
                   v1.y() * j + v2.y() * i,
                   v1.z() * j + v2.z() * i);
@@ -87,7 +87,7 @@ Vertex lerp(Vertex const &v1, Vertex const &v2, GLfloat i)
 ////////////////////////////////////////////////////////////////////////
 // Quad
 
-Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4, GLfloat l)
+Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4, double l)
     : indices { v1, v2, v3, v4 }, isEmitter(false), light(l), brightness(0)
 {
 }
@@ -100,12 +100,12 @@ void Quad::render(std::vector<Vertex> const &v) const
     Vertex const &v3 = v[indices[3]];
     Vertex n = cross(v3 - v0, v1 - v0).norm();
     glBegin(GL_QUADS);
-    glColor3f(brightness, brightness, brightness);
-    glNormal3fv(n.p);
-    glVertex3fv(v0.p);
-    glVertex3fv(v1.p);
-    glVertex3fv(v2.p);
-    glVertex3fv(v3.p);
+    glColor3d(brightness, brightness, brightness);
+    glNormal3dv(n.p);
+    glVertex3dv(v0.p);
+    glVertex3dv(v1.p);
+    glVertex3dv(v2.p);
+    glVertex3dv(v3.p);
     glEnd();
 }
 
@@ -119,11 +119,11 @@ void Quad::renderIndex(int index, std::vector<Vertex> const &v) const
     glBegin(GL_QUADS);
     // We're not using that many polys, so skip the low bits.
     glColor3ub((index << 2) & 0xFC, (index >> 4) & 0xFC, (index >> 10) & 0xFC);
-    glNormal3fv(n.p);
-    glVertex3fv(v0.p);
-    glVertex3fv(v1.p);
-    glVertex3fv(v2.p);
-    glVertex3fv(v3.p);
+    glNormal3dv(n.p);
+    glVertex3dv(v0.p);
+    glVertex3dv(v1.p);
+    glVertex3dv(v2.p);
+    glVertex3dv(v3.p);
     glEnd();
 }
 
@@ -143,9 +143,9 @@ void subdivide(Quad const &quad,
     // Generate the grid of points we will build the quads from.
     for (GLint v = 0; v < vCount + 1; ++v) {
         for (GLint u = 0; u < uCount + 1; ++u) {
-            Vertex u0 = lerp(v0, v1, static_cast<GLfloat>(u) / uCount);
-            Vertex u1 = lerp(v3, v2, static_cast<GLfloat>(u) / uCount);
-            Vertex pt = lerp(u0, u1, static_cast<GLfloat>(v) / vCount);
+            Vertex u0 = lerp(v0, v1, static_cast<double>(u) / uCount);
+            Vertex u1 = lerp(v3, v2, static_cast<double>(u) / uCount);
+            Vertex pt = lerp(u0, u1, static_cast<double>(v) / vCount);
             vs.push_back(pt);
         }
     }
@@ -166,7 +166,7 @@ void subdivide(Quad const &quad,
 // Basic shapes.
 
 // Brightness of the walls, etc.
-static const GLfloat B = 0.7;
+static const double B = 0.7;
 
 std::vector<Quad> const cubeFaces = {
     Quad(1, 0, 2, 3, B), Quad(3, 2, 6, 7, B), Quad(7, 6, 4, 5, B),

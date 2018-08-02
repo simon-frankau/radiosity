@@ -34,19 +34,19 @@ GLint const SUBDIVISION = 32;
 class Vertex
 {
 public:
-    Vertex(GLfloat ix, GLfloat iy, GLfloat iz);
+    Vertex(double ix, double iy, double iz);
     Vertex(Vertex const &v);
 
-    GLfloat len() const;
+    double len() const;
     Vertex norm() const;
 
     Vertex operator-(Vertex const &rhs) const;
 
-    GLfloat x() const;
-    GLfloat y() const;
-    GLfloat z() const;
+    double x() const;
+    double y() const;
+    double z() const;
 
-    GLfloat p[3];
+    double p[3];
 };
 
 std::ostream &operator<<(std::ostream &os, Vertex const &v);
@@ -55,10 +55,10 @@ std::ostream &operator<<(std::ostream &os, Vertex const &v);
 Vertex cross(Vertex const &v1, Vertex const &v2);
 
 // Dot product.
-GLfloat dot(Vertex const &v1, Vertex const &v2);
+double dot(Vertex const &v1, Vertex const &v2);
 
 // Linear interpolation. 0 returns v1, 1 returns v2.
-Vertex lerp(Vertex const &v1, Vertex const &v2, GLfloat i);
+Vertex lerp(Vertex const &v1, Vertex const &v2, double i);
 
 ////////////////////////////////////////////////////////////////////////
 // And a quadrilateral
@@ -68,7 +68,7 @@ class Quad
 public:
     Quad(GLint v1, GLint v2,
          GLint v3, GLint v4,
-         GLfloat l);
+         double l);
 
     void render(std::vector<Vertex> const &v) const;
     // For transfer calculations.
@@ -78,9 +78,9 @@ public:
     // Does this quad emit light, or just reflect?
     bool isEmitter;
     // How much light it emits, or the fraction reflected.
-    GLfloat light;
+    double light;
     // On-screen brightness.
-    GLfloat brightness;
+    double brightness;
 };
 
 // Break apart the given quad into a bunch of quads, add them to "qs",

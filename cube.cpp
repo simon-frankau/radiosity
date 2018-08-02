@@ -46,13 +46,13 @@ Vertex quadCross(Quad const &q, std::vector<Vertex> const &vs)
     return cross(v3 - v0, v1 - v0);
 }
 
-GLfloat quadArea(Quad const &q, std::vector<Vertex> const &vs)
+double quadArea(Quad const &q, std::vector<Vertex> const &vs)
 {
     return quadCross(q, vs).len();
 }
 
 // Ignoring visibility, etc., calculate transfer between two quads.
-GLfloat basicTransfer(Quad const &src, Quad const &dst,
+double basicTransfer(Quad const &src, Quad const &dst,
                       std::vector<Vertex> const &vs)
 {
     // Find centres of the quads
@@ -62,16 +62,16 @@ GLfloat basicTransfer(Quad const &src, Quad const &dst,
     Vertex path = c2 - c1;
 
     // Inverse square component.
-    GLfloat l = path.len();
-    GLfloat r2 = 1.0 / (l * l);
+    double l = path.len();
+    double r2 = 1.0 / (l * l);
 
     // Find area and angle from the path.
     // TODO: Facing direction.
     path = path.norm();
     Vertex srcNorm = quadCross(src, vs);
     Vertex dstNorm = quadCross(dst, vs).norm();
-    GLfloat f1 = fmax(0, -dot(srcNorm, path));
-    GLfloat f2 = fmax(0,  dot(dstNorm, path));
+    double f1 = fmax(0, -dot(srcNorm, path));
+    double f2 = fmax(0,  dot(dstNorm, path));
 
     return fmin(1.0, r2 * f1 * f2 / M_PI);
 }
@@ -90,7 +90,7 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 }
 
 void initTransfers(std::vector<Quad> &qs, std::vector<Vertex> const &vs,
-                   std::vector<GLfloat> &transfers)
+                   std::vector<double> &transfers)
 {
     int n = qs.size();
     // Iterate over targets
@@ -102,14 +102,14 @@ void initTransfers(std::vector<Quad> &qs, std::vector<Vertex> const &vs,
     }
 }
 
-void iterateLighting(std::vector<Quad> &qs, std::vector<GLfloat> const &transfers)
+void iterateLighting(std::vector<Quad> &qs, std::vector<double> const &transfers)
 {
     int n = qs.size();
-    std::vector<GLfloat> updatedBrightness(n);
+    std::vector<double> updatedBrightness(n);
 
     // Iterate over targets
     for (int i = 0; i < n; ++i) {
-        GLfloat newBrightness = 0;
+        double newBrightness = 0;
         if (qs[i].isEmitter) {
             // Emission is just like having 1.0 light arrive.
             newBrightness = 1.0;
@@ -134,7 +134,7 @@ void iterateLighting(std::vector<Quad> &qs, std::vector<GLfloat> const &transfer
 // brightness.
 double calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
-    GLfloat totalLight = 0.0;
+    double totalLight = 0.0;
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
          iter != end; ++iter) {
         totalLight += iter->brightness * quadArea(*iter, vs);
@@ -150,7 +150,7 @@ double calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 static std::vector<Quad> faces;
 static std::vector<Vertex> vertices;
 // Array of quad-to-quad light transfers.
-static std::vector<GLfloat> transfers;
+static std::vector<double> transfers;
 
 // Subdivide the faces
 void initGeometry(void)
