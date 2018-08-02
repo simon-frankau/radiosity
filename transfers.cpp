@@ -145,9 +145,7 @@ std::vector<double> const &TransferCalculator::getSubtendWeights()
     return m_subtendWeights;
 }
 
-
 // TODO:
 //  * Extend unit tests to try different scene rotations and see
 //    how it goes.
-//  * Resizable rendering.
 //  * Incoming light calculations.
