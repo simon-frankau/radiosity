@@ -36,6 +36,8 @@ private:
     CPPUNIT_TEST(testParaArea);
     CPPUNIT_TEST(trivialSubdivideQuad);
     CPPUNIT_TEST(subdivideQuad);
+    // Cube case
+    CPPUNIT_TEST(cubeProperties);
     CPPUNIT_TEST_SUITE_END();
 
     // Vertex cases
@@ -57,7 +59,8 @@ private:
     void testParaArea();
     void trivialSubdivideQuad();
     void subdivideQuad();
-
+    // Cube case
+    void cubeProperties();
     // Helpers
     void vecEquals(Vertex const &v1, Vertex const &v2);
 };
@@ -270,12 +273,27 @@ void GeomTestCase::subdivideQuad()
     subdivide(q, vs, qs, 10, 20);
     CPPUNIT_ASSERT_EQUAL(10ul * 20ul, qs.size());
 
+    double subdivArea = 0.0;
     for (unsigned long i = 0; i < qs.size(); ++i) {
         CPPUNIT_ASSERT_DOUBLES_EQUAL(q.light, qs[i].light, 1e-9);
+        subdivArea += paraArea(qs[i], vs);
     }
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(paraArea(q, vs), subdivArea, 1e-9);
+}
 
-    // TODO: Check area is preseved. We want area calculation
-    // functions.
+void GeomTestCase::cubeProperties()
+{
+    // Check that all faces of the cube face the same way around the
+    // origin and have same area.
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(4.0,
+                                     paraArea(cubeFaces[i], cubeVertices),
+                                     1e-9);
+
+        Vertex normal(paraCross(cubeFaces[i], cubeVertices));
+        Vertex corner(cubeVertices[cubeFaces[i].indices[0]]);
+        CPPUNIT_ASSERT(dot(normal, corner) > 0);
+    }
 }
 
 void GeomTestCase::vecEquals(Vertex const &v1, Vertex const &v2)
@@ -283,4 +301,4 @@ void GeomTestCase::vecEquals(Vertex const &v1, Vertex const &v2)
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, (v1 - v2).len(), 1e-9);
 }
 
-// TODO: test cases for quad and basic shapes.
+// TODO: test cases for cube
