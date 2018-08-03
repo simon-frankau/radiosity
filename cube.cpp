@@ -30,29 +30,6 @@ const double CONVERGENCE_TARGET = 0.001;
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations
 
-// Return the centre of the quad. Assumes paralellogram.
-Vertex paraCentre(Quad const &q, std::vector<Vertex> const &vs)
-{
-    return lerp(vs[q.indices[0]], vs[q.indices[2]], 0.5);
-}
-
-// Return the vector for the cross product of the edges - this will
-// have length proportional to area, and be normal to the quad.
-// Also assumes parallelogram.
-Vertex paraCross(Quad const &q, std::vector<Vertex> const &vs)
-{
-    Vertex const &v0 = vs[q.indices[0]];
-    Vertex const &v1 = vs[q.indices[1]];
-    Vertex const &v3 = vs[q.indices[3]];
-    return cross(v3 - v0, v1 - v0);
-}
-
-// Find area of given parallelogram.
-double paraArea(Quad const &q, std::vector<Vertex> const &vs)
-{
-    return paraCross(q, vs).len();
-}
-
 // Ignoring visibility, etc., calculate transfer between two quads.
 double basicTransfer(Quad const &src, Quad const &dst,
                       std::vector<Vertex> const &vs)

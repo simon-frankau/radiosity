@@ -83,6 +83,17 @@ public:
     double brightness;
 };
 
+// Return the centre of the quad. Assumes paralellogram.
+Vertex paraCentre(Quad const &q, std::vector<Vertex> const &vs);
+
+// Return the vector for the cross product of the edges - this will
+// have length proportional to area, and be normal to the quad.
+// Also assumes parallelogram.
+Vertex paraCross(Quad const &q, std::vector<Vertex> const &vs);
+
+// Find area of given parallelogram.
+double paraArea(Quad const &q, std::vector<Vertex> const &vs);
+
 // Break apart the given quad into a bunch of quads, add them to "qs",
 // and add the new vertices to "vs".
 void subdivide(Quad const &quad,
