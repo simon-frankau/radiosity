@@ -30,15 +30,16 @@ const double CONVERGENCE_TARGET = 0.001;
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations
 
-// Return the centre of the quad.
-Vertex centre(Quad const &q, std::vector<Vertex> const &vs)
+// Return the centre of the quad. Assumes paralellogram.
+Vertex paraCentre(Quad const &q, std::vector<Vertex> const &vs)
 {
     return lerp(vs[q.indices[0]], vs[q.indices[2]], 0.5);
 }
 
 // Return the vector for the cross product of the edges - this will
 // have length proportional to area, and be normal to the quad.
-Vertex quadCross(Quad const &q, std::vector<Vertex> const &vs)
+// Also assumes parallelogram.
+Vertex paraCross(Quad const &q, std::vector<Vertex> const &vs)
 {
     Vertex const &v0 = vs[q.indices[0]];
     Vertex const &v1 = vs[q.indices[1]];
@@ -46,9 +47,10 @@ Vertex quadCross(Quad const &q, std::vector<Vertex> const &vs)
     return cross(v3 - v0, v1 - v0);
 }
 
-double quadArea(Quad const &q, std::vector<Vertex> const &vs)
+// Find area of given parallelogram.
+double paraArea(Quad const &q, std::vector<Vertex> const &vs)
 {
-    return quadCross(q, vs).len();
+    return paraCross(q, vs).len();
 }
 
 // Ignoring visibility, etc., calculate transfer between two quads.
@@ -56,8 +58,8 @@ double basicTransfer(Quad const &src, Quad const &dst,
                       std::vector<Vertex> const &vs)
 {
     // Find centres of the quads
-    Vertex c1 = centre(src, vs);
-    Vertex c2 = centre(dst, vs);
+    Vertex c1 = paraCentre(src, vs);
+    Vertex c2 = paraCentre(dst, vs);
     // Vector from one quad to the other.
     Vertex path = c2 - c1;
 
@@ -68,8 +70,8 @@ double basicTransfer(Quad const &src, Quad const &dst,
     // Find area and angle from the path.
     // TODO: Facing direction.
     path = path.norm();
-    Vertex srcNorm = quadCross(src, vs);
-    Vertex dstNorm = quadCross(dst, vs).norm();
+    Vertex srcNorm = paraCross(src, vs);
+    Vertex dstNorm = paraCross(dst, vs).norm();
     double f1 = fmax(0, -dot(srcNorm, path));
     double f2 = fmax(0,  dot(dstNorm, path));
 
@@ -80,7 +82,7 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
          iter != end; ++iter) {
-        Vertex c = centre(*iter, vs);
+        Vertex c = paraCentre(*iter, vs);
         // Put a big light in the top centre of the box.
         if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0) {
             iter->light = iter->brightness = 2.0;
@@ -137,7 +139,7 @@ double calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     double totalLight = 0.0;
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
          iter != end; ++iter) {
-        totalLight += iter->brightness * quadArea(*iter, vs);
+        totalLight += iter->brightness * paraArea(*iter, vs);
     }
     return totalLight;
 }
