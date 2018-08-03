@@ -31,6 +31,9 @@ private:
     CPPUNIT_TEST(lerpVertex);
     // Quad cases
     CPPUNIT_TEST(constructQuad);
+    CPPUNIT_TEST(testParaCentre);
+    CPPUNIT_TEST(testParaCross);
+    CPPUNIT_TEST(testParaArea);
     CPPUNIT_TEST(trivialSubdivideQuad);
     CPPUNIT_TEST(subdivideQuad);
     CPPUNIT_TEST_SUITE_END();
@@ -49,6 +52,9 @@ private:
     void lerpVertex();
     // Quad cases
     void constructQuad();
+    void testParaCentre();
+    void testParaCross();
+    void testParaArea();
     void trivialSubdivideQuad();
     void subdivideQuad();
 
@@ -189,6 +195,41 @@ void GeomTestCase::constructQuad()
     CPPUNIT_ASSERT_EQUAL(false, q.isEmitter);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.5, q.light,      1e-9);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, q.brightness, 1e-9);
+}
+
+void GeomTestCase::testParaCentre()
+{
+    std::vector<Vertex> vs;
+    vs.push_back(Vertex(1.0, 0.0, 0.0));
+    vs.push_back(Vertex(1.0, 1.0, 0.0));
+    vs.push_back(Vertex(2.0, 2.0, 0.0));
+    vs.push_back(Vertex(2.0, 1.0, 0.0));
+    Quad q(0, 1, 2, 3, 0.5);
+    Vertex vc(1.5, 1.0, 0.0);
+    vecEquals(vc, paraCentre(q, vs));
+}
+
+void GeomTestCase::testParaCross()
+{
+    std::vector<Vertex> vs;
+    vs.push_back(Vertex(1.0, 0.0, 0.0));
+    vs.push_back(Vertex(1.0, 1.0, 0.0));
+    vs.push_back(Vertex(2.0, 2.0, 0.0));
+    vs.push_back(Vertex(2.0, 1.0, 0.0));
+    Quad q(0, 1, 2, 3, 0.5);
+    Vertex vc(0.0, 0.0, 1.0);
+    vecEquals(vc, paraCross(q, vs));
+}
+
+void GeomTestCase::testParaArea()
+{
+    std::vector<Vertex> vs;
+    vs.push_back(Vertex(1.0, 0.0, 0.0));
+    vs.push_back(Vertex(1.0, 1.0, 0.0));
+    vs.push_back(Vertex(2.0, 2.0, 0.0));
+    vs.push_back(Vertex(2.0, 1.0, 0.0));
+    Quad q(0, 1, 2, 3, 0.5);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, paraArea(q, vs), 1e-9);
 }
 
 void GeomTestCase::trivialSubdivideQuad()
