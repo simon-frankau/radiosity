@@ -29,6 +29,10 @@ private:
     CPPUNIT_TEST(otherDotVertex);
     CPPUNIT_TEST(crossVertex);
     CPPUNIT_TEST(lerpVertex);
+    // Quad cases
+    CPPUNIT_TEST(constructQuad);
+    CPPUNIT_TEST(trivialSubdivideQuad);
+    CPPUNIT_TEST(subdivideQuad);
     CPPUNIT_TEST_SUITE_END();
 
     // Vertex cases
@@ -43,6 +47,10 @@ private:
     void otherDotVertex();
     void crossVertex();
     void lerpVertex();
+    // Quad cases
+    void constructQuad();
+    void trivialSubdivideQuad();
+    void subdivideQuad();
 
     // Helpers
     void vecEquals(Vertex const &v1, Vertex const &v2);
@@ -60,7 +68,6 @@ void GeomTestCase::copyVertex()
     CPPUNIT_ASSERT(v1.z() == v2.z());
 }
 
-
 void GeomTestCase::getVertexComponents()
 {
     Vertex v(-1.0, 2.0, 3.0);
@@ -73,7 +80,6 @@ void GeomTestCase::getVertexComponents()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(+2.0, v.p[1], 1e-9);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(+3.0, v.p[2], 1e-9);
 }
-
 
 void GeomTestCase::getVertexLength()
 {
@@ -171,6 +177,64 @@ void GeomTestCase::lerpVertex()
     vecEquals(v000, lerp(v000, v100, 0.00));
     vecEquals(v100, lerp(v000, v100, 1.00));
     vecEquals(v025, lerp(v000, v100, 0.25));
+}
+
+void GeomTestCase::constructQuad()
+{
+    Quad q(1, 2, 3, 4, 0.5);
+    CPPUNIT_ASSERT_EQUAL(1, q.indices[0]);
+    CPPUNIT_ASSERT_EQUAL(2, q.indices[1]);
+    CPPUNIT_ASSERT_EQUAL(3, q.indices[2]);
+    CPPUNIT_ASSERT_EQUAL(4, q.indices[3]);
+    CPPUNIT_ASSERT_EQUAL(false, q.isEmitter);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.5, q.light,      1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, q.brightness, 1e-9);
+}
+
+void GeomTestCase::trivialSubdivideQuad()
+{
+    std::vector<Vertex> vs;
+    std::vector<Quad> qs;
+
+    vs.push_back(Vertex(1.0, 1.0, 1.0));
+    vs.push_back(Vertex(1.0, 5.0, 1.0));
+    vs.push_back(Vertex(1.0, 5.0, 5.0));
+    vs.push_back(Vertex(1.0, 1.0, 5.0));
+
+    Quad q(0, 1, 2, 3, 0.5);
+    subdivide(q, vs, qs, 1, 1);
+
+    CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
+    Quad &q2 = qs[0];
+    for (int i = 0; i < 4; ++i) {
+        vecEquals(vs[q.indices[i]], vs[q2.indices[i]]);
+    }
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(q.light, q2.light, 1e-9);
+}
+
+void GeomTestCase::subdivideQuad()
+{
+    // I'm sure there are funky things we could do. Let's just check
+    // we get the right number of quads and area is preserved.
+    std::vector<Vertex> vs;
+    std::vector<Quad> qs;
+
+    vs.push_back(Vertex(1.0, 1.0, 1.0));
+    vs.push_back(Vertex(1.0, 5.0, 1.0));
+    vs.push_back(Vertex(1.0, 5.0, 5.0));
+    vs.push_back(Vertex(1.0, 1.0, 5.0));
+
+    Quad q(0, 1, 2, 3, 0.7);
+
+    subdivide(q, vs, qs, 10, 20);
+    CPPUNIT_ASSERT_EQUAL(10ul * 20ul, qs.size());
+
+    for (unsigned long i = 0; i < qs.size(); ++i) {
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(q.light, qs[i].light, 1e-9);
+    }
+
+    // TODO: Check area is preseved. We want area calculation
+    // functions.
 }
 
 void GeomTestCase::vecEquals(Vertex const &v1, Vertex const &v2)
