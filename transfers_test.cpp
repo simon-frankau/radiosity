@@ -21,10 +21,12 @@ private:
     CPPUNIT_TEST_SUITE(TransfersTestCase);
     CPPUNIT_TEST(renderEachFaceIsAreaOne);
     CPPUNIT_TEST(renderEachFaceIsAreaOneWithDifferentResolution);
+    CPPUNIT_TEST(analyticTotalAreaIsSix);
     CPPUNIT_TEST_SUITE_END();
 
     void renderEachFaceIsAreaOne();
     void renderEachFaceIsAreaOneWithDifferentResolution();
+    void analyticTotalAreaIsSix();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TransfersTestCase, "TransfersTestCase");
@@ -50,3 +52,22 @@ void TransfersTestCase::renderEachFaceIsAreaOneWithDifferentResolution()
         CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, sums[i], 1.0e-6);
     }
 }
+
+void TransfersTestCase::analyticTotalAreaIsSix()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+    }
+    AnalyticTransferCalculator tc(vertices, quads);
+    std::vector<double> sums = tc.calcSubtended();
+    double total = 0.0;
+    for (int i = 0; i < sums.size(); ++i) {
+        total += sums[i];
+    }
+    // Tolerance is roughly of order 1/(32*32).
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(6.0, total, 2.0e-3);
+}
+
+// TODO: Compare analytic and render-based calculations...

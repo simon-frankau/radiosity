@@ -164,7 +164,7 @@ AnalyticTransferCalculator::AnalyticTransferCalculator(
 std::vector<double> AnalyticTransferCalculator::calcSubtended()
 {
     std::vector<double> weights;
-    for (int i = 0, n = m_vertices.size(); i < n; ++i) {
+    for (int i = 0, n = m_faces.size(); i < n; ++i) {
         weights.push_back(calcSingleQuadSubtended(m_faces[i]));
     }
     return weights;
@@ -183,9 +183,10 @@ double AnalyticTransferCalculator::calcSingleQuadSubtended(
     // Area, scaled by angle to camera.
     dir = dir.norm();
     Vertex norm = paraCross(quad, m_vertices);
-    double area = fmax(0, -dot(norm, dir));
+    double area = fmax(0, dot(norm, dir));
 
-    return r2 * area / M_PI;
+    // Normalise to surface area of 6.
+    return 1.5 * r2 * area / M_PI;
 }
 
 // TODO:
