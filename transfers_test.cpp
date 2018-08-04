@@ -26,6 +26,8 @@ private:
     CPPUNIT_TEST(renderEachFaceIsAreaOneWithDifferentDirection);
     CPPUNIT_TEST(analyticTotalAreaIsSix);
     CPPUNIT_TEST(analyticVsRenderSubtended);
+    CPPUNIT_TEST(analyticVsRenderSubtendedOffCentre);
+    CPPUNIT_TEST(analyticVsRenderSubtendedOutside);
     CPPUNIT_TEST_SUITE_END();
 
     void renderEachFaceIsAreaOne();
@@ -33,6 +35,8 @@ private:
     void renderEachFaceIsAreaOneWithDifferentDirection();
     void analyticTotalAreaIsSix();
     void analyticVsRenderSubtended();
+    void analyticVsRenderSubtendedOffCentre();
+    void analyticVsRenderSubtendedOutside();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TransfersTestCase, "TransfersTestCase");
@@ -107,5 +111,62 @@ void TransfersTestCase::analyticVsRenderSubtended()
     for (int i = 0; i < analyticAreas.size(); ++i) {
         double relError = std::fabs(renderAreas[i] / analyticAreas[i] - 1);
         CPPUNIT_ASSERT(relError < 0.001);
+    }
+}
+
+void TransfersTestCase::analyticVsRenderSubtendedOffCentre()
+{
+    Camera cam(Vertex(0.1, -0.1, 0.1),  // Slightly off the origin.
+               Vertex(0.1, -0.1, 1.0),  // Look in same direction.
+               Vertex(0.0,  1.0, 0.0)); // Usual 'up'.
+
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+    }
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticAreas = atc.calcSubtended(cam);
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderAreas = rtc.calcSubtended(cam);
+
+    CPPUNIT_ASSERT_EQUAL(analyticAreas.size(), renderAreas.size());
+    for (int i = 0; i < analyticAreas.size(); ++i) {
+        double relError = std::fabs(renderAreas[i] / analyticAreas[i] - 1);
+        // Relative errors are pretty big, but smaller than comparing
+        // against when the positions don't line up.
+        CPPUNIT_ASSERT(relError < 0.1);
+    }
+}
+
+void TransfersTestCase::analyticVsRenderSubtendedOutside()
+{
+    Camera cam(Vertex(0.0, 0.0, -1.1),  // Just outside cube.
+               Vertex(0.0, 0.0,  1.0),  // The rest, as usual
+               Vertex(0.0, 1.0,  0.0));
+
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        subdivide(cubeFaces[i], vertices, quads, 16, 16);
+    }
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticAreas = atc.calcSubtended(cam);
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderAreas = rtc.calcSubtended(cam);
+
+    CPPUNIT_ASSERT_EQUAL(analyticAreas.size(), renderAreas.size());
+    for (int i = 0; i < analyticAreas.size(); ++i) {
+        double relError = std::fabs(renderAreas[i] / analyticAreas[i] - 1);
+        // Some faces are back-culled, we don't want NaN.
+        if (renderAreas[i] == 0.0 || analyticAreas[i] == 0.0) {
+            relError = std::max(std::fabs(renderAreas[i]),
+                                std::fabs(analyticAreas[i]));
+        }
+        // Relative errors are pretty big, but smaller than comparing
+        // against when the positions don't line up.
+        CPPUNIT_ASSERT(relError < 0.12);
     }
 }

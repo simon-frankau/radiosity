@@ -89,7 +89,7 @@ RenderTransferCalculator::~RenderTransferCalculator()
 void RenderTransferCalculator::render(void)
 {
     for (int i = 0, n = m_faces.size(); i < n; ++i) {
-        m_faces[i].renderIndex(i, m_vertices);
+        m_faces[i].renderIndex(i + 1, m_vertices);
     }
 }
 
@@ -105,7 +105,9 @@ void RenderTransferCalculator::sumWeights(std::vector<double> const &weights)
     for (int i = 0, n = pixels.size(); i < n; i += 4) {
         // We're not using that many polys, so skip the low bits.
         int index = (pixels[i] + (pixels[i+1] << 6) + (pixels[i+2] << 12)) >> 2;
-        m_sums[index] += weights[i/4];
+        if (index > 0) {
+            m_sums[index - 1] += weights[i/4];
+        }
     }
 }
 
@@ -194,6 +196,4 @@ double AnalyticTransferCalculator::calcSingleQuadSubtended(
 }
 
 // TODO:
-//  * Extend unit tests to try different scene rotations and see
-//    how it goes.
 //  * Incoming light calculations.
