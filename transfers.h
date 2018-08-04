@@ -10,15 +10,16 @@
 #define RADIOSITY_TRANSFERS_H
 
 // This class holds all the state that stays the same as we repeatedly
-// render the scene from different views...
-class TransferCalculator
+// render the scene from different views to calculate the light
+// transfers.
+class RenderTransferCalculator
 {
 public:
-    TransferCalculator(std::vector<Vertex> const &vertices,
-                       std::vector<Quad> const &faces,
-                       int resolution);
+    RenderTransferCalculator(std::vector<Vertex> const &vertices,
+                             std::vector<Quad> const &faces,
+                             int resolution);
 
-    virtual ~TransferCalculator();
+    virtual ~RenderTransferCalculator();
 
     std::vector<double> calcSubtended();
 
@@ -44,6 +45,22 @@ private:
 
     // Sums being calculated.
     std::vector<double> m_sums;
+};
+
+class AnalyticTransferCalculator
+{
+public:
+    AnalyticTransferCalculator(std::vector<Vertex> const &vertices,
+                               std::vector<Quad> const &faces);
+
+    std::vector<double> calcSubtended();
+
+private:
+    double calcSingleQuadSubtended(Quad const &q) const;
+
+    // Geometry.
+    std::vector<Vertex> const &m_vertices;
+    std::vector<Quad> const &m_faces;
 };
 
 #endif // RADIOSITY_TRANSFERS_H

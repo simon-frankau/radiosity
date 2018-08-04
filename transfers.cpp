@@ -3,10 +3,10 @@
 // transfers.cpp: Calculate the weights used for working out how the
 // light is transferred between elements.
 //
-// We render the scene from the view of all elements to see where the
-// light comes from.
+// For the rendering version, we render the scene from the view of all
+// elements to see where the light comes from.
 //
-// Copyright (c) Simon Frankaus 2018
+// Copyright (c) Simon Frankau 2018
 //
 
 // TODO: Must be a better way, but those OpenGL deprecation warnings
@@ -66,12 +66,13 @@ static void viewDown(void)
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Class that holds all the bits to do transfer calculations.
+// Use scene rendering to calculate the transfer functions.
 //
 
-TransferCalculator::TransferCalculator(std::vector<Vertex> const &vertices,
-                                       std::vector<Quad> const &faces,
-                                       int resolution)
+RenderTransferCalculator::RenderTransferCalculator(
+    std::vector<Vertex> const &vertices,
+    std::vector<Quad> const &faces,
+    int resolution)
     : m_vertices(vertices),
       m_faces(faces),
       m_resolution(resolution),
@@ -79,13 +80,13 @@ TransferCalculator::TransferCalculator(std::vector<Vertex> const &vertices,
 {
 }
 
-TransferCalculator::~TransferCalculator()
+RenderTransferCalculator::~RenderTransferCalculator()
 {
     glutDestroyWindow(m_win);
 }
 
 // Extremely simple rendering of the scene.
-void TransferCalculator::render(void)
+void RenderTransferCalculator::render(void)
 {
     for (int i = 0, n = m_faces.size(); i < n; ++i) {
         m_faces[i].renderIndex(i, m_vertices);
@@ -95,10 +96,11 @@ void TransferCalculator::render(void)
 static const int NUM_CHANS = 4;
 
 // Sum up value of the pixels, with the given weights.
-void TransferCalculator::sumWeights(std::vector<double> const &weights)
+void RenderTransferCalculator::sumWeights(std::vector<double> const &weights)
 {
     std::vector<GLubyte> pixels(NUM_CHANS * m_resolution * m_resolution);
-    glReadPixels(0, 0, m_resolution, m_resolution, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
+    glReadPixels(0, 0, m_resolution, m_resolution,
+                 GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
     for (int i = 0, n = pixels.size(); i < n; i += 4) {
         // We're not using that many polys, so skip the low bits.
@@ -108,7 +110,9 @@ void TransferCalculator::sumWeights(std::vector<double> const &weights)
 }
 
 // Work out contributions from the given face.
-void TransferCalculator::calcFace(viewFn_t view, std::vector<double> const &weights)
+void RenderTransferCalculator::calcFace(
+    viewFn_t view,
+    std::vector<double> const &weights)
 {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -120,7 +124,7 @@ void TransferCalculator::calcFace(viewFn_t view, std::vector<double> const &weig
 }
 
 // Calculate the the area subtended by the faces, using a cube map.
-std::vector<double> TransferCalculator::calcSubtended()
+std::vector<double> RenderTransferCalculator::calcSubtended()
 {
     m_sums.clear();
     m_sums.resize(m_faces.size());
@@ -137,12 +141,51 @@ std::vector<double> TransferCalculator::calcSubtended()
     return m_sums;
 }
 
-std::vector<double> const &TransferCalculator::getSubtendWeights()
+std::vector<double> const &RenderTransferCalculator::getSubtendWeights()
 {
     if (m_subtendWeights.empty()) {
         calcSubtendWeights(m_resolution, m_subtendWeights);
     }
     return m_subtendWeights;
+}
+
+////////////////////////////////////////////////////////////////////////
+// Calculate analytic approximations of the transfer functions.
+//
+
+AnalyticTransferCalculator::AnalyticTransferCalculator(
+    std::vector<Vertex> const &vertices,
+    std::vector<Quad> const &faces)
+    : m_vertices(vertices),
+      m_faces(faces)
+{
+}
+
+std::vector<double> AnalyticTransferCalculator::calcSubtended()
+{
+    std::vector<double> weights;
+    for (int i = 0, n = m_vertices.size(); i < n; ++i) {
+        weights.push_back(calcSingleQuadSubtended(m_faces[i]));
+    }
+    return weights;
+}
+
+double AnalyticTransferCalculator::calcSingleQuadSubtended(
+    Quad const &quad) const
+{
+    Vertex centre = paraCentre(quad, m_vertices);
+    Vertex dir = centre - Vertex(0, 0, 0); // TODO: Mobile camera.
+
+    // Inverse square component.
+    double l = dir.len();
+    double r2 = 1.0 / (l * l);
+
+    // Area, scaled by angle to camera.
+    dir = dir.norm();
+    Vertex norm = paraCross(quad, m_vertices);
+    double area = fmax(0, -dot(norm, dir));
+
+    return r2 * area / M_PI;
 }
 
 // TODO:
