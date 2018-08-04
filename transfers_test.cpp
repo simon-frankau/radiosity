@@ -5,6 +5,8 @@
 // (c) Copyright Simon Frankau 2018
 //
 
+#include <cmath>
+
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -22,11 +24,13 @@ private:
     CPPUNIT_TEST(renderEachFaceIsAreaOne);
     CPPUNIT_TEST(renderEachFaceIsAreaOneWithDifferentResolution);
     CPPUNIT_TEST(analyticTotalAreaIsSix);
+    CPPUNIT_TEST(analyticVsRenderSubtended);
     CPPUNIT_TEST_SUITE_END();
 
     void renderEachFaceIsAreaOne();
     void renderEachFaceIsAreaOneWithDifferentResolution();
     void analyticTotalAreaIsSix();
+    void analyticVsRenderSubtended();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TransfersTestCase, "TransfersTestCase");
@@ -70,4 +74,22 @@ void TransfersTestCase::analyticTotalAreaIsSix()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(6.0, total, 2.0e-3);
 }
 
-// TODO: Compare analytic and render-based calculations...
+void TransfersTestCase::analyticVsRenderSubtended()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+    }
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticAreas = atc.calcSubtended();
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderAreas = rtc.calcSubtended();
+
+    CPPUNIT_ASSERT_EQUAL(analyticAreas.size(), renderAreas.size());
+    for (int i = 0; i < analyticAreas.size(); ++i) {
+        double relError = std::fabs(renderAreas[i] / analyticAreas[i] - 1);
+        CPPUNIT_ASSERT(relError < 0.001);
+    }
+}
