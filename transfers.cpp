@@ -111,12 +111,14 @@ void RenderTransferCalculator::sumWeights(std::vector<double> const &weights)
 
 // Work out contributions from the given face.
 void RenderTransferCalculator::calcFace(
+    Camera const &cam,
     viewFn_t view,
     std::vector<double> const &weights)
 {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     view();
+    cam.applyViewTransform();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     render();
     sumWeights(weights);
@@ -124,19 +126,19 @@ void RenderTransferCalculator::calcFace(
 }
 
 // Calculate the the area subtended by the faces, using a cube map.
-std::vector<double> RenderTransferCalculator::calcSubtended()
+std::vector<double> RenderTransferCalculator::calcSubtended(Camera const &cam)
 {
     m_sums.clear();
     m_sums.resize(m_faces.size());
 
     std::vector<double> const &ws = getSubtendWeights();
 
-    calcFace(viewFront, ws);
-    calcFace(viewBack,  ws);
-    calcFace(viewRight, ws);
-    calcFace(viewLeft,  ws);
-    calcFace(viewUp,    ws);
-    calcFace(viewDown,  ws);
+    calcFace(cam, viewFront, ws);
+    calcFace(cam, viewBack,  ws);
+    calcFace(cam, viewRight, ws);
+    calcFace(cam, viewLeft,  ws);
+    calcFace(cam, viewUp,    ws);
+    calcFace(cam, viewDown,  ws);
 
     return m_sums;
 }
@@ -161,20 +163,22 @@ AnalyticTransferCalculator::AnalyticTransferCalculator(
 {
 }
 
-std::vector<double> AnalyticTransferCalculator::calcSubtended()
+std::vector<double> AnalyticTransferCalculator::calcSubtended(
+    Camera const &cam)
 {
     std::vector<double> weights;
     for (int i = 0, n = m_faces.size(); i < n; ++i) {
-        weights.push_back(calcSingleQuadSubtended(m_faces[i]));
+        weights.push_back(calcSingleQuadSubtended(cam, m_faces[i]));
     }
     return weights;
 }
 
 double AnalyticTransferCalculator::calcSingleQuadSubtended(
+    Camera const &cam,
     Quad const &quad) const
 {
     Vertex centre = paraCentre(quad, m_vertices);
-    Vertex dir = centre - Vertex(0, 0, 0); // TODO: Mobile camera.
+    Vertex dir = centre - cam.getEyePos();
 
     // Inverse square component.
     double l = dir.len();

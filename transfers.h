@@ -21,14 +21,16 @@ public:
 
     virtual ~RenderTransferCalculator();
 
-    std::vector<double> calcSubtended();
+    std::vector<double> calcSubtended(Camera const &cam);
 
 private:
     typedef void (*viewFn_t)();
 
     void render(void);
     void sumWeights(std::vector<double> const &weights);
-    void calcFace(viewFn_t view, std::vector<double> const &weights);
+    void calcFace(Camera const &cam,
+                  viewFn_t view,
+                  std::vector<double> const &weights);
 
     std::vector<double> const &getSubtendWeights();
 
@@ -53,10 +55,10 @@ public:
     AnalyticTransferCalculator(std::vector<Vertex> const &vertices,
                                std::vector<Quad> const &faces);
 
-    std::vector<double> calcSubtended();
+    std::vector<double> calcSubtended(Camera const &cam);
 
 private:
-    double calcSingleQuadSubtended(Quad const &q) const;
+    double calcSingleQuadSubtended(Camera const &cam, Quad const &q) const;
 
     // Geometry.
     std::vector<Vertex> const &m_vertices;

@@ -42,7 +42,7 @@ extern void calcCube(std::vector<Vertex> const &vertices,
 void TransfersTestCase::renderEachFaceIsAreaOne()
 {
     RenderTransferCalculator tc(cubeVertices, cubeFaces, RESOLUTION);
-    std::vector<double> sums = tc.calcSubtended();
+    std::vector<double> sums = tc.calcSubtended(Camera::baseCamera);
     for (int i = 0; i < sums.size(); ++i) {
         CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, sums[i], 1.0e-6);
     }
@@ -51,7 +51,7 @@ void TransfersTestCase::renderEachFaceIsAreaOne()
 void TransfersTestCase::renderEachFaceIsAreaOneWithDifferentResolution()
 {
     RenderTransferCalculator tc(cubeVertices, cubeFaces, RESOLUTION * 4);
-    std::vector<double> sums = tc.calcSubtended();
+    std::vector<double> sums = tc.calcSubtended(Camera::baseCamera);
     for (int i = 0; i < sums.size(); ++i) {
         CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, sums[i], 1.0e-6);
     }
@@ -65,7 +65,7 @@ void TransfersTestCase::analyticTotalAreaIsSix()
         subdivide(cubeFaces[i], vertices, quads, 32, 32);
     }
     AnalyticTransferCalculator tc(vertices, quads);
-    std::vector<double> sums = tc.calcSubtended();
+    std::vector<double> sums = tc.calcSubtended(Camera::baseCamera);
     double total = 0.0;
     for (int i = 0; i < sums.size(); ++i) {
         total += sums[i];
@@ -82,10 +82,10 @@ void TransfersTestCase::analyticVsRenderSubtended()
         subdivide(cubeFaces[i], vertices, quads, 32, 32);
     }
     AnalyticTransferCalculator atc(vertices, quads);
-    std::vector<double> analyticAreas = atc.calcSubtended();
+    std::vector<double> analyticAreas = atc.calcSubtended(Camera::baseCamera);
 
     RenderTransferCalculator rtc(vertices, quads, 512);
-    std::vector<double> renderAreas = rtc.calcSubtended();
+    std::vector<double> renderAreas = rtc.calcSubtended(Camera::baseCamera);
 
     CPPUNIT_ASSERT_EQUAL(analyticAreas.size(), renderAreas.size());
     for (int i = 0; i < analyticAreas.size(); ++i) {

@@ -95,3 +95,34 @@ void gwRenderOnce(void (*f)())
     f();
 #endif
 }
+
+Camera::Camera(Vertex const &eyePos, Vertex const &lookAt, Vertex const &upDir)
+    : m_eyePos(eyePos), m_lookAt(lookAt), m_upDir(upDir)
+{
+}
+
+Camera Camera::baseCamera = Camera(Vertex(0.0, 0.0, 0.0),
+                                   Vertex(0.0, 0.0, 1.0),
+                                   Vertex(0.0, 1.0, 0.0));
+
+Vertex Camera::getEyePos() const
+{
+    return m_eyePos;
+}
+
+Vertex Camera::getLookAt() const
+{
+    return m_lookAt;
+}
+
+Vertex Camera::getUpDir() const
+{
+    return m_upDir;
+}
+
+void Camera::applyViewTransform() const
+{
+    gluLookAt(m_eyePos.x(), m_eyePos.y(), m_eyePos.z(),
+              m_lookAt.x(), m_lookAt.y(), m_lookAt.z(),
+              m_upDir.x(), m_upDir.y(), m_upDir.z());
+}

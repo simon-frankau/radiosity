@@ -18,6 +18,8 @@
 #include <GL/glut.h>
 #endif
 
+#include "geom.h"
+
 // Set the flags etc. up for rendering a cube map. Returns window id.
 int gwTransferSetup(int size);
 
@@ -26,5 +28,26 @@ int gwTransferSetup(int size);
 // loop, but I haven't poked around the event loop code enough to be
 // sure.
 void gwRenderOnce(void (*f)());
+
+// Camera object, used to pass camera set-up to the
+// TransferCalculators.
+class Camera
+{
+public:
+    Camera(Vertex const &eyePos, Vertex const &lookAt, Vertex const &upDir);
+
+    static Camera baseCamera;
+
+    Vertex getEyePos() const;
+    Vertex getLookAt() const;
+    Vertex getUpDir() const;
+
+    void applyViewTransform() const;
+
+private:
+    Vertex const m_eyePos;
+    Vertex const m_lookAt;
+    Vertex const m_upDir;
+};
 
 #endif // RADIOSITY_GLUT_WRAP_H
