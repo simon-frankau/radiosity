@@ -23,12 +23,14 @@ private:
     CPPUNIT_TEST_SUITE(TransfersTestCase);
     CPPUNIT_TEST(renderEachFaceIsAreaOne);
     CPPUNIT_TEST(renderEachFaceIsAreaOneWithDifferentResolution);
+    CPPUNIT_TEST(renderEachFaceIsAreaOneWithDifferentDirection);
     CPPUNIT_TEST(analyticTotalAreaIsSix);
     CPPUNIT_TEST(analyticVsRenderSubtended);
     CPPUNIT_TEST_SUITE_END();
 
     void renderEachFaceIsAreaOne();
     void renderEachFaceIsAreaOneWithDifferentResolution();
+    void renderEachFaceIsAreaOneWithDifferentDirection();
     void analyticTotalAreaIsSix();
     void analyticVsRenderSubtended();
 };
@@ -54,6 +56,20 @@ void TransfersTestCase::renderEachFaceIsAreaOneWithDifferentResolution()
     std::vector<double> sums = tc.calcSubtended(Camera::baseCamera);
     for (int i = 0; i < sums.size(); ++i) {
         CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, sums[i], 1.0e-6);
+    }
+}
+
+void TransfersTestCase::renderEachFaceIsAreaOneWithDifferentDirection()
+{
+    Camera cam(Vertex(0.0, 0.0, 0.0),  // Still at origin
+               Vertex(1.0, 3.0, 7.0),  // Look at arbitrary direction.
+               Vertex(1.0, 2.0, 0.0)); // Arbitrary 'up'.
+
+    RenderTransferCalculator tc(cubeVertices, cubeFaces, RESOLUTION);
+    std::vector<double> sums = tc.calcSubtended(cam);
+    for (int i = 0; i < sums.size(); ++i) {
+        // Slightly larger error, but not much.
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, sums[i], 5.0e-5);
     }
 }
 
