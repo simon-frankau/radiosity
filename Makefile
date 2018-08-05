@@ -3,7 +3,7 @@ all: bin/cube bin/test
 clean:
 	rm -rf bin/
 
-bin/cube: cube.cpp geom.cpp glut_wrap.cpp
+bin/cube: cube.cpp geom.cpp glut_wrap.cpp geom.cpp transfers.cpp weighting.cpp
 	mkdir -p bin
 	g++ -std=c++11 -framework GLUT -framework OpenGL $^ -O2 -o $@
 

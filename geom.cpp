@@ -45,6 +45,11 @@ Vertex Vertex::norm() const
     return Vertex(x() / l, y() / l, z() / l);
 }
 
+Vertex Vertex::operator+(Vertex const &rhs) const
+{
+    return Vertex(x() + rhs.x(), y() + rhs.y(), z() + rhs.z());
+}
+
 Vertex Vertex::operator-(Vertex const &rhs) const
 {
     return Vertex(x() - rhs.x(), y() - rhs.y(), z() - rhs.z());

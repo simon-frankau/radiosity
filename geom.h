@@ -40,6 +40,7 @@ public:
     double len() const;
     Vertex norm() const;
 
+    Vertex operator+(Vertex const &rhs) const;
     Vertex operator-(Vertex const &rhs) const;
 
     double x() const;
