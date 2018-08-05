@@ -2,10 +2,7 @@
 //
 // cube.cpp: Calculate radiosity inside a cube.
 //
-// Copyright (c) Simon Frankaus 2018
-//
-// Portions Copyright (c) Mark J. Kilgard, 1997, from
-// https://www.opengl.org/archives/resources/code/samples/glut_examples/examples/cube.c
+// Copyright (c) Simon Frankau 2018
 //
 
 // TODO: Must be a better way, but those OpenGL deprecation warnings
@@ -31,31 +28,6 @@ const double CONVERGENCE_TARGET = 0.001;
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations
 
-// Ignoring visibility, etc., calculate transfer between two quads.
-double basicTransfer(Quad const &src, Quad const &dst,
-                      std::vector<Vertex> const &vs)
-{
-    // Find centres of the quads
-    Vertex c1 = paraCentre(src, vs);
-    Vertex c2 = paraCentre(dst, vs);
-    // Vector from one quad to the other.
-    Vertex path = c2 - c1;
-
-    // Inverse square component.
-    double l = path.len();
-    double r2 = 1.0 / (l * l);
-
-    // Find area and angle from the path.
-    // TODO: Facing direction.
-    path = path.norm();
-    Vertex srcNorm = paraCross(src, vs);
-    Vertex dstNorm = paraCross(dst, vs).norm();
-    double f1 = fmax(0, -dot(srcNorm, path));
-    double f2 = fmax(0,  dot(dstNorm, path));
-
-    return fmin(1.0, r2 * f1 * f2 / M_PI);
-}
-
 void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
@@ -65,31 +37,6 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
         if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0) {
             iter->light = iter->brightness = 2.0;
             iter->isEmitter = true;
-        }
-    }
-}
-
-void initTransfers(std::vector<Quad> &qs, std::vector<Vertex> const &vs,
-                   std::vector<double> &transfers)
-{
-    int n = qs.size();
-    // Iterate over targets
-    for (int i = 0; i < n; ++i) {
-        // Iterate over sources
-        for (int j = 0; j < n; ++j) {
-            transfers.push_back(basicTransfer(qs[j], qs[i], vs));
-        }
-    }
-
-    // Compare with analytic calc
-    AnalyticTransferCalculator tc(vs, qs);
-    std::vector<double> analyticLight;
-    tc.calcAllLights(analyticLight);
-
-    for (int i = 0; i < transfers.size(); ++i) {
-        double diff = fabs(transfers[i] / analyticLight[i] - 1);
-        if (diff > 1e-15) {
-            std::cout << diff << std::endl;
         }
     }
 }
@@ -202,7 +149,7 @@ int main(int argc, char **argv)
     initGL();
     initGeometry();
     initLighting(faces, vertices);
-    initTransfers(faces, vertices, transfers);
+    AnalyticTransferCalculator(vertices, faces).calcAllLights(transfers);
     double light = 0.0;
     double relChange;
     do {
