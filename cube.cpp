@@ -75,26 +75,21 @@ void initTransfers(std::vector<Quad> &qs, std::vector<Vertex> const &vs,
     int n = qs.size();
     // Iterate over targets
     for (int i = 0; i < n; ++i) {
-        std::vector<double> cubeLight;
         // Iterate over sources
         for (int j = 0; j < n; ++j) {
             transfers.push_back(basicTransfer(qs[j], qs[i], vs));
-            cubeLight.push_back(basicTransfer(qs[j], qs[i], vs));
         }
+    }
 
-        // Compare with analytic calc
-        AnalyticTransferCalculator tc(vs, qs);
-        Vertex eye(paraCentre(qs[i], vs));
-        Vertex lookAt(eye - paraCross(qs[i], vs));
-        Vertex up(0.0, 0.0, 0.0);
-        std::vector<double> analyticLight =
-            tc.calcLight(Camera(eye, lookAt, up));
+    // Compare with analytic calc
+    AnalyticTransferCalculator tc(vs, qs);
+    std::vector<double> analyticLight;
+    tc.calcAllLights(analyticLight);
 
-        for (int i = 0; i < cubeLight.size(); ++i) {
-            double diff = fabs(cubeLight[i] / analyticLight[i] - 1);
-            if (diff > 1e-15) {
-                std::cout << diff << std::endl;
-            }
+    for (int i = 0; i < transfers.size(); ++i) {
+        double diff = fabs(transfers[i] / analyticLight[i] - 1);
+        if (diff > 1e-15) {
+            std::cout << diff << std::endl;
         }
     }
 }

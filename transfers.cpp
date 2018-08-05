@@ -195,6 +195,27 @@ double AnalyticTransferCalculator::calcSingleQuadSubtended(
     return 1.5 * r2 * area / M_PI;
 }
 
+void AnalyticTransferCalculator::calcAllLights(std::vector<double> &weights)
+{
+    int n = m_faces.size();
+    weights.clear();
+    weights.reserve(n * n);
+    Vertex up(0.0, 0.0, 0.0);
+
+    // Iterate over targets
+    for (int i = 0; i < n; ++i) {
+        Quad currQuad = m_faces[i];
+        Vertex eye(paraCentre(currQuad, m_vertices));
+        Vertex lookAt(eye - paraCross(currQuad, m_vertices));
+        Camera cam(eye, lookAt, up);
+
+        // Iterate over sources
+        for (int j = 0; j < n; ++j) {
+            weights.push_back(calcSingleQuadLight(cam, m_faces[j]));
+        }
+    }
+}
+
 std::vector<double> AnalyticTransferCalculator::calcLight(
     Camera const &cam)
 {

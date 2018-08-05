@@ -56,12 +56,12 @@ public:
                                std::vector<Quad> const &faces);
 
     std::vector<double> calcSubtended(Camera const &cam);
-
     std::vector<double> calcLight(Camera const &cam);
-    double calcSingleQuadLight(Camera const &cam, Quad const &quad) const;
+    void calcAllLights(std::vector<double> &weights);
 
 private:
     double calcSingleQuadSubtended(Camera const &cam, Quad const &q) const;
+    double calcSingleQuadLight(Camera const &cam, Quad const &quad) const;
 
     // Geometry.
     std::vector<Vertex> const &m_vertices;
