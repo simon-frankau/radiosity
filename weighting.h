@@ -19,4 +19,8 @@ void projSubtendWeights(int resolution, std::vector<double> &weights);
 // finite differences.
 void calcSubtendWeights(int resolution, std::vector<double> &weights);
 
+// Calculate forward-facing weights. Like calcSubtendWeights, but with an extra
+// cos(theta) factor for the angle from facing direction.
+void calcForwardLightWeights(int resolution, std::vector<double> &weights);
+
 #endif // RADIOSITY_WEIGHTING_H

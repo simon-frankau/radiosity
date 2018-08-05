@@ -29,6 +29,7 @@ private:
     CPPUNIT_TEST(analyticVsRenderSubtendedOffCentre);
     CPPUNIT_TEST(analyticVsRenderSubtendedOutside);
     CPPUNIT_TEST(analyticTotalLightIsOne);
+    CPPUNIT_TEST(analyticVsRenderLight);
     CPPUNIT_TEST_SUITE_END();
 
     void renderEachFaceIsAreaOne();
@@ -39,6 +40,7 @@ private:
     void analyticVsRenderSubtendedOffCentre();
     void analyticVsRenderSubtendedOutside();
     void analyticTotalLightIsOne();
+    void analyticVsRenderLight();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TransfersTestCase, "TransfersTestCase");
@@ -188,4 +190,28 @@ void TransfersTestCase::analyticTotalLightIsOne()
     }
     // Tolerance is roughly of order 1/(32*32).
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, total, 1.0e-3);
+}
+
+void TransfersTestCase::analyticVsRenderLight()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+    }
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticLight = atc.calcLight(Camera::baseCamera);
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderLight = rtc.calcLight(Camera::baseCamera);
+
+    CPPUNIT_ASSERT_EQUAL(analyticLight.size(), renderLight.size());
+    for (int i = 0; i < analyticLight.size(); ++i) {
+        if (renderLight[i] != 0.0) {
+            // TODO: Only doing the front face of the cube so far.
+            double relError = std::fabs(renderLight[i] / analyticLight[i] - 1);
+            // std::cout << relError << " " << renderLight[i] << " " << analyticLight[i] << std::endl;
+            CPPUNIT_ASSERT(relError < 0.002);
+        }
+    }
 }

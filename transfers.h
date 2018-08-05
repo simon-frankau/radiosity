@@ -22,6 +22,7 @@ public:
     virtual ~RenderTransferCalculator();
 
     std::vector<double> calcSubtended(Camera const &cam);
+    std::vector<double> calcLight(Camera const &cam);
 
 private:
     typedef void (*viewFn_t)();
@@ -33,6 +34,7 @@ private:
                   std::vector<double> const &weights);
 
     std::vector<double> const &getSubtendWeights();
+    std::vector<double> const &getForwardLightWeights();
 
     // Geometry.
     std::vector<Vertex> const &m_vertices;
@@ -42,8 +44,9 @@ private:
     // Window id.
     int const m_win;
 
-    // Weighting tables for area subtended calculations
+    // Weighting tables.
     std::vector<double> m_subtendWeights;
+    std::vector<double> m_forwardLightWeights;
 
     // Sums being calculated.
     std::vector<double> m_sums;

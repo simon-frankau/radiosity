@@ -123,7 +123,7 @@ void RenderTransferCalculator::calcFace(
     glutSwapBuffers();
 }
 
-// Calculate the the area subtended by the faces, using a cube map.
+// Calculate the area subtended by the faces, using a cube map.
 std::vector<double> RenderTransferCalculator::calcSubtended(Camera const &cam)
 {
     m_sums.clear();
@@ -148,6 +148,36 @@ std::vector<double> const &RenderTransferCalculator::getSubtendWeights()
     }
     return m_subtendWeights;
 }
+
+// Calculate the light received, using half a cube map.
+std::vector<double> RenderTransferCalculator::calcLight(Camera const &cam)
+{
+    m_sums.clear();
+    m_sums.resize(m_faces.size());
+
+    std::vector<double> const &ws = getForwardLightWeights();
+
+    calcFace(cam, viewFront, ws);
+/*
+    calcFace(cam, viewRight, ws);
+    calcFace(cam, viewLeft,  ws);
+    calcFace(cam, viewUp,    ws);
+    calcFace(cam, viewDown,  ws);
+*/
+
+    return m_sums;
+}
+
+std::vector<double> const &RenderTransferCalculator::getForwardLightWeights()
+{
+    if (m_forwardLightWeights.empty()) {
+        calcForwardLightWeights(m_resolution, m_forwardLightWeights);
+
+        calcSubtendWeights(m_resolution, m_subtendWeights);
+    }
+    return m_forwardLightWeights;
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 // Calculate analytic approximations of the transfer functions.

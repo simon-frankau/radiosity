@@ -31,7 +31,7 @@ void projSubtendWeights(int resolution, std::vector<double> &weights)
     }
 }
 
-// Like calcSubtendWeights, but generated analytically rather than through
+// Like projSubtendWeights, but generated analytically rather than through
 // finite differences.
 void calcSubtendWeights(int resolution, std::vector<double> &weights)
 {
@@ -61,6 +61,30 @@ void calcSubtendWeights(int resolution, std::vector<double> &weights)
             // And the final calculation, throwing in a couple of
             // "conv"s to get the scaling factor right.
             weights.push_back(weight * conv * conv * xFactor * yFactor);
+        }
+    }
+}
+
+// Calculate forward-facing weights. Like calcSubtendWeights, but with an extra
+// cos(theta) factor for the angle from facing direction.
+void calcForwardLightWeights(int resolution, std::vector<double> &weights)
+{
+    double conv = 2.0 / resolution;
+    double weight = 1.0 / M_PI;
+
+    for (int y = 0; y < resolution; ++y) {
+        for (int x = 0; x < resolution; ++x) {
+            // Mostly calculation is same as before...
+            double px = (x + 0.5) * conv - 1.0;
+            double py = (y + 0.5) * conv - 1.0;
+            double distSq = px * px + py * py;
+            double xFactor = 1.0 / (1.0 + distSq);
+            double yFactor = sqrt(xFactor);
+            // With extra cos factor. distSq is tan(theta)^2, we want
+            // cos(theta):
+            double cosFactor = 1.0 / sqrt(1.0 + distSq);
+            weights.push_back(weight * conv * conv *
+                              xFactor * yFactor * cosFactor);
         }
     }
 }
