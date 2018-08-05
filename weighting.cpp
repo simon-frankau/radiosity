@@ -13,8 +13,6 @@
 
 // Generate a weightings array based on projecting rectangles onto a
 // sphere. Assumes 90 degree field of view.
-//
-// TODO: This doesn't include cos(angle from normal) factor.
 void projSubtendWeights(int resolution, std::vector<double> &weights)
 {
     // From -1 to +1.

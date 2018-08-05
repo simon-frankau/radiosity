@@ -97,7 +97,4 @@ can look into bouncing the light around...
 
 ## TODOs
 
- * I'd really like to put in a bunch of unit tests, but don't have
-   cppunit installed yet...
  * Move to a scheme where visibility feeds into the calculations!
- * Bounce the light around.

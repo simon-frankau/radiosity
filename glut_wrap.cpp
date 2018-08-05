@@ -5,8 +5,6 @@
 // Copyright (c) Simon Frankaus 2018
 //
 
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else

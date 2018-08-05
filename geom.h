@@ -8,10 +8,6 @@
 #ifndef RADIOSITY_GEOM_H
 #define RADIOSITY_GEOM_H
 
-// TODO: Must be a better way, but those OpenGL deprecation warnings
-// are really annoying.
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else

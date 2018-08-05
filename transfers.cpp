@@ -9,10 +9,6 @@
 // Copyright (c) Simon Frankau 2018
 //
 
-// TODO: Must be a better way, but those OpenGL deprecation warnings
-// are really annoying.
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else

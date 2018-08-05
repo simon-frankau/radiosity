@@ -22,6 +22,7 @@ private:
     CPPUNIT_TEST(getVertexComponents);
     CPPUNIT_TEST(getVertexLength);
     CPPUNIT_TEST(getVertexNorm);
+    CPPUNIT_TEST(vertexAddition);
     CPPUNIT_TEST(vertexSubtraction);
     CPPUNIT_TEST(printVertex);
     CPPUNIT_TEST(selfDotVertex);
@@ -45,6 +46,7 @@ private:
     void getVertexComponents();
     void getVertexLength();
     void getVertexNorm();
+    void vertexAddition();
     void vertexSubtraction();
     void printVertex();
     void selfDotVertex();
@@ -107,6 +109,17 @@ void GeomTestCase::getVertexNorm()
     double rz = v1.x() / v2.x();
     CPPUNIT_ASSERT_DOUBLES_EQUAL(rx, ry, 1e-9);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(rx, rz, 1e-9);
+}
+
+void GeomTestCase::vertexAddition()
+{
+    Vertex v1(-1.0, 2.0,  3.0);
+    Vertex v2(-4.0, 5.0, -6.0);
+    Vertex v3(v1 + v2);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(-5.0, v3.x(), 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(+7.0, v3.y(), 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(-3.0, v3.z(), 1e-9);
 }
 
 void GeomTestCase::vertexSubtraction()
@@ -300,5 +313,3 @@ void GeomTestCase::vecEquals(Vertex const &v1, Vertex const &v2)
 {
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, (v1 - v2).len(), 1e-9);
 }
-
-// TODO: test cases for cube
