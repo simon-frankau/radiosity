@@ -57,6 +57,9 @@ public:
 
     std::vector<double> calcSubtended(Camera const &cam);
 
+    std::vector<double> calcLight(Camera const &cam);
+    double calcSingleQuadLight(Camera const &cam, Quad const &quad) const;
+
 private:
     double calcSingleQuadSubtended(Camera const &cam, Quad const &q) const;
 

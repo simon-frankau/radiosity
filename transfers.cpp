@@ -195,5 +195,37 @@ double AnalyticTransferCalculator::calcSingleQuadSubtended(
     return 1.5 * r2 * area / M_PI;
 }
 
-// TODO:
-//  * Incoming light calculations.
+std::vector<double> AnalyticTransferCalculator::calcLight(
+    Camera const &cam)
+{
+    std::vector<double> weights;
+    for (int i = 0, n = m_faces.size(); i < n; ++i) {
+        weights.push_back(calcSingleQuadLight(cam, m_faces[i]));
+    }
+    return weights;
+}
+
+double AnalyticTransferCalculator::calcSingleQuadLight(
+    Camera const &cam,
+    Quad const &quad) const
+{
+    Vertex eyePos = cam.getEyePos();
+    Vertex centre = paraCentre(quad, m_vertices);
+    Vertex dir = centre - eyePos;
+
+    // Inverse square component.
+    double l = dir.len();
+    double r2 = 1.0 / (l * l);
+
+    // Area, scaled by angle to camera.
+    dir = dir.norm();
+    Vertex norm = paraCross(quad, m_vertices);
+    double area = fmax(0, dot(norm, dir));
+
+    // And angle to surface.
+    Vertex lookVec = (cam.getLookAt() - eyePos).norm();
+    double cosCamAngle = fmax(0.0, dot(lookVec, dir));
+
+    // Normalise to surface area of 6.
+    return cosCamAngle * r2 * area / M_PI;
+}

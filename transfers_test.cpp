@@ -24,19 +24,21 @@ private:
     CPPUNIT_TEST(renderEachFaceIsAreaOne);
     CPPUNIT_TEST(renderEachFaceIsAreaOneWithDifferentResolution);
     CPPUNIT_TEST(renderEachFaceIsAreaOneWithDifferentDirection);
-    CPPUNIT_TEST(analyticTotalAreaIsSix);
+    CPPUNIT_TEST(analyticSubtendedTotalAreaIsSix);
     CPPUNIT_TEST(analyticVsRenderSubtended);
     CPPUNIT_TEST(analyticVsRenderSubtendedOffCentre);
     CPPUNIT_TEST(analyticVsRenderSubtendedOutside);
+    CPPUNIT_TEST(analyticTotalLightIsOne);
     CPPUNIT_TEST_SUITE_END();
 
     void renderEachFaceIsAreaOne();
     void renderEachFaceIsAreaOneWithDifferentResolution();
     void renderEachFaceIsAreaOneWithDifferentDirection();
-    void analyticTotalAreaIsSix();
+    void analyticSubtendedTotalAreaIsSix();
     void analyticVsRenderSubtended();
     void analyticVsRenderSubtendedOffCentre();
     void analyticVsRenderSubtendedOutside();
+    void analyticTotalLightIsOne();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TransfersTestCase, "TransfersTestCase");
@@ -77,7 +79,7 @@ void TransfersTestCase::renderEachFaceIsAreaOneWithDifferentDirection()
     }
 }
 
-void TransfersTestCase::analyticTotalAreaIsSix()
+void TransfersTestCase::analyticSubtendedTotalAreaIsSix()
 {
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> quads;
@@ -169,4 +171,21 @@ void TransfersTestCase::analyticVsRenderSubtendedOutside()
         // against when the positions don't line up.
         CPPUNIT_ASSERT(relError < 0.12);
     }
+}
+
+void TransfersTestCase::analyticTotalLightIsOne()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+    }
+    AnalyticTransferCalculator tc(vertices, quads);
+    std::vector<double> sums = tc.calcLight(Camera::baseCamera);
+    double total = 0.0;
+    for (int i = 0; i < sums.size(); ++i) {
+        total += sums[i];
+    }
+    // Tolerance is roughly of order 1/(32*32).
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, total, 1.0e-3);
 }

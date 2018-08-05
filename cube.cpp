@@ -173,9 +173,9 @@ void initGL(void)
                    1.0,   // Z near
                    10.0); // Z far
     glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 3.0, // Eye position
-              0.0, 0.0, 0.0, // Looking at
-              0.0, 1.0, 0.); // Up is in positive Y direction
+    gluLookAt(0.0, 0.0, -3.0, // Eye position
+              0.0, 0.0,  0.0, // Looking at
+              0.0, 1.0,  0.); // Up is in positive Y direction
 }
 
 int main(int argc, char **argv)
