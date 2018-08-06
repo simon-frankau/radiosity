@@ -35,6 +35,7 @@ private:
 
     std::vector<double> const &getSubtendWeights();
     std::vector<double> const &getForwardLightWeights();
+    std::vector<double> const &getSideLightWeights();
 
     // Geometry.
     std::vector<Vertex> const &m_vertices;
@@ -47,6 +48,7 @@ private:
     // Weighting tables.
     std::vector<double> m_subtendWeights;
     std::vector<double> m_forwardLightWeights;
+    std::vector<double> m_sideLightWeights;
 
     // Sums being calculated.
     std::vector<double> m_sums;

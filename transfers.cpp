@@ -15,8 +15,9 @@
 #include <GL/glut.h>
 #endif
 
-#include <iostream>
+#include <cassert>
 #include <cmath>
+#include <iostream>
 #include <vector>
 
 #include "geom.h"
@@ -27,6 +28,11 @@
 ////////////////////////////////////////////////////////////////////////
 // Functions to face in cube map directions
 //
+
+// For the sides, the forward-facing part is mapped to the bottom of
+// the framebuffer, which is the start of the data when read with
+// glReadPixels, so that we only need to do the weighted sum on the
+// first half of the read data.
 
 static void viewFront(void)
 {
@@ -40,24 +46,24 @@ static void viewBack(void)
 
 static void viewRight(void)
 {
-    glRotated(-90.0, 0.0, 0.0, 1.0);
+    glRotated(+90.0, 0.0, 0.0, 1.0);
     glRotated(+90.0, 0.0, 1.0, 0.0);
 }
 
 static void viewLeft(void)
 {
-    glRotated(+90.0, 0.0, 0.0, 1.0);
+    glRotated(-90.0, 0.0, 0.0, 1.0);
     glRotated(-90.0, 0.0, 1.0, 0.0);
 }
 
 static void viewUp(void)
 {
-    glRotated(180.0, 0.0, 0.0, 1.0);
     glRotated(-90.0, 1.0, 0.0, 0.0);
 }
 
 static void viewDown(void)
 {
+    glRotated(180.0, 0.0, 0.0, 1.0);
     glRotated(+90.0, 1.0, 0.0, 0.0);
 }
 
@@ -98,7 +104,8 @@ void RenderTransferCalculator::sumWeights(std::vector<double> const &weights)
     glReadPixels(0, 0, m_resolution, m_resolution,
                  GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
-    for (int i = 0, n = pixels.size(); i < n; i += 4) {
+    assert(pixels.size() >= weights.size() * NUM_CHANS);
+    for (int i = 0, n = weights.size() * NUM_CHANS; i < n; i += NUM_CHANS) {
         // We're not using that many polys, so skip the low bits.
         int index = (pixels[i] + (pixels[i+1] << 6) + (pixels[i+2] << 12)) >> 2;
         if (index > 0) {
@@ -155,15 +162,14 @@ std::vector<double> RenderTransferCalculator::calcLight(Camera const &cam)
     m_sums.clear();
     m_sums.resize(m_faces.size());
 
-    std::vector<double> const &ws = getForwardLightWeights();
+    std::vector<double> const &fws = getForwardLightWeights();
+    std::vector<double> const &sws = getSideLightWeights();
 
-    calcFace(cam, viewFront, ws);
-/*
-    calcFace(cam, viewRight, ws);
-    calcFace(cam, viewLeft,  ws);
-    calcFace(cam, viewUp,    ws);
-    calcFace(cam, viewDown,  ws);
-*/
+    calcFace(cam, viewFront, fws);
+    calcFace(cam, viewRight, sws);
+    calcFace(cam, viewLeft,  sws);
+    calcFace(cam, viewUp,    sws);
+    calcFace(cam, viewDown,  sws);
 
     return m_sums;
 }
@@ -172,12 +178,17 @@ std::vector<double> const &RenderTransferCalculator::getForwardLightWeights()
 {
     if (m_forwardLightWeights.empty()) {
         calcForwardLightWeights(m_resolution, m_forwardLightWeights);
-
-        calcSubtendWeights(m_resolution, m_subtendWeights);
     }
     return m_forwardLightWeights;
 }
 
+std::vector<double> const &RenderTransferCalculator::getSideLightWeights()
+{
+    if (m_sideLightWeights.empty()) {
+        calcSideLightWeights(m_resolution, m_sideLightWeights);
+    }
+    return m_sideLightWeights;
+}
 
 ////////////////////////////////////////////////////////////////////////
 // Calculate analytic approximations of the transfer functions.
