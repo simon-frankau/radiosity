@@ -101,11 +101,9 @@ void calcSideLightWeights(int resolution, std::vector<double> &weights)
             double py = (y + 0.5) * conv - 1.0;
             double distSq = px * px + py * py;
             double xFactor = 1.0 / (1.0 + distSq);
-            double yFactor = sqrt(xFactor);
-            // With extra factor representing cos(theta).
-            double cosFactor = -py * yFactor;
+            // The extra weighting needed for the extra cos is yFactor * -py.
             weights.push_back(weight * conv * conv *
-                              xFactor * yFactor * cosFactor);
+                              xFactor * xFactor * -py);
         }
     }
 }
