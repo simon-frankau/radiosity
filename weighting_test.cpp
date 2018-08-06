@@ -21,11 +21,13 @@ private:
     CPPUNIT_TEST(projSubtendWeightsSumToOne);
     CPPUNIT_TEST(calcSubtendWeightsSumToOne);
     CPPUNIT_TEST(weightsMatch);
+    CPPUNIT_TEST(calcLightWeightsSumToOne);
     CPPUNIT_TEST_SUITE_END();
 
     void projSubtendWeightsSumToOne();
     void calcSubtendWeightsSumToOne();
     void weightsMatch();
+    void calcLightWeightsSumToOne();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(WeightingTestCase, "WeightingTestCase");
@@ -61,4 +63,24 @@ void WeightingTestCase::weightsMatch()
         double error = fabs(1 - ws[i] / ws2[i]);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, error, 1.0 / RESOLUTION);
     }
+}
+
+void WeightingTestCase::calcLightWeightsSumToOne()
+{
+    std::vector<double> frontWeights;
+    calcForwardLightWeights(RESOLUTION, frontWeights);
+    double totalFrontWeight = 0.0;
+    for (int i = 0, n = frontWeights.size(); i < n; ++i) {
+        totalFrontWeight += frontWeights[i];
+    }
+
+    std::vector<double> sideWeights;
+    calcSideLightWeights(RESOLUTION, sideWeights);
+    double totalSideWeight = 0.0;
+    for (int i = 0, n = sideWeights.size(); i < n; ++i) {
+        totalSideWeight += sideWeights[i];
+    }
+
+    double totalWeight = totalFrontWeight + 4 * totalSideWeight;
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, totalWeight, 1e-5);
 }

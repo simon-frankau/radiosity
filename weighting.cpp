@@ -79,10 +79,31 @@ void calcForwardLightWeights(int resolution, std::vector<double> &weights)
             double py = (y + 0.5) * conv - 1.0;
             double distSq = px * px + py * py;
             double xFactor = 1.0 / (1.0 + distSq);
+            // We multiply in an extra sqrt(xFactor) to get what we need,
+            // which turns the whole thing into an extra xFactor.
+            weights.push_back(weight * conv * conv *
+                              xFactor * xFactor);
+        }
+    }
+}
+
+// Calculate sideways-facing weights. Like calcForwardLightWeights,
+// but for the sideways face cube maps.
+void calcSideLightWeights(int resolution, std::vector<double> &weights)
+{
+    double conv = 2.0 / resolution;
+    double weight = 1.0 / M_PI;
+
+    for (int y = 0; y < resolution / 2; ++y) {
+        for (int x = 0; x < resolution; ++x) {
+            // Mostly calculation is same as before...
+            double px = (x + 0.5) * conv - 1.0;
+            double py = (y + 0.5) * conv - 1.0;
+            double distSq = px * px + py * py;
+            double xFactor = 1.0 / (1.0 + distSq);
             double yFactor = sqrt(xFactor);
-            // With extra cos factor. distSq is tan(theta)^2, we want
-            // cos(theta):
-            double cosFactor = 1.0 / sqrt(1.0 + distSq);
+            // With extra factor representing cos(theta).
+            double cosFactor = -py * yFactor;
             weights.push_back(weight * conv * conv *
                               xFactor * yFactor * cosFactor);
         }

@@ -23,4 +23,8 @@ void calcSubtendWeights(int resolution, std::vector<double> &weights);
 // cos(theta) factor for the angle from facing direction.
 void calcForwardLightWeights(int resolution, std::vector<double> &weights);
 
+// Calculate sideways-facing weights. Like calcForwardLightWeights,
+// but for the sideways face cube maps.
+void calcSideLightWeights(int resolution, std::vector<double> &weights);
+
 #endif // RADIOSITY_WEIGHTING_H
