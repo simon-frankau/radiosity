@@ -137,6 +137,8 @@ Vertex paraCentre(Quad const &q, std::vector<Vertex> const &vs)
 // Return the vector for the cross product of the edges - this will
 // have length proportional to area, and be normal to the quad.
 // Also assumes parallelogram.
+//
+// NB: Vector faces away from viewer in how we do things here.
 Vertex paraCross(Quad const &q, std::vector<Vertex> const &vs)
 {
     Vertex const &v0 = vs[q.indices[0]];

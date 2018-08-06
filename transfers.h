@@ -23,6 +23,7 @@ public:
 
     std::vector<double> calcSubtended(Camera const &cam);
     std::vector<double> calcLight(Camera const &cam);
+    void calcAllLights(std::vector<double> &weights);
 
 private:
     typedef void (*viewFn_t)();
@@ -36,6 +37,8 @@ private:
     std::vector<double> const &getSubtendWeights();
     std::vector<double> const &getForwardLightWeights();
     std::vector<double> const &getSideLightWeights();
+
+    static Vertex upForDir(Vertex const &dir);
 
     // Geometry.
     std::vector<Vertex> const &m_vertices;

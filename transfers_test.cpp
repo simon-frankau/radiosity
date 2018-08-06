@@ -30,6 +30,10 @@ private:
     CPPUNIT_TEST(analyticVsRenderSubtendedOutside);
     CPPUNIT_TEST(analyticTotalLightIsOne);
     CPPUNIT_TEST(analyticVsRenderLight);
+    CPPUNIT_TEST(analyticVsRenderLight2);
+    CPPUNIT_TEST(baseCameraFacesRightWay);
+    CPPUNIT_TEST(backCameraFacesRightWay);
+    CPPUNIT_TEST(calcAllLightsWorks);
     CPPUNIT_TEST_SUITE_END();
 
     void renderEachFaceIsAreaOne();
@@ -41,6 +45,10 @@ private:
     void analyticVsRenderSubtendedOutside();
     void analyticTotalLightIsOne();
     void analyticVsRenderLight();
+    void analyticVsRenderLight2();
+    void baseCameraFacesRightWay();
+    void backCameraFacesRightWay();
+    void calcAllLightsWorks();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TransfersTestCase, "TransfersTestCase");
@@ -214,4 +222,111 @@ void TransfersTestCase::analyticVsRenderLight()
             CPPUNIT_ASSERT(relError < 0.003);
         }
     }
+}
+
+// Check scores match up with some camera adjustment applied.
+void TransfersTestCase::analyticVsRenderLight2()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
+        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+    }
+
+    Camera cam(Vertex(0.1, -0.1, 0.05),
+               Vertex(1.0, 1.0, 1.0),
+               Vertex(1.0, 0.0, 0.0));
+
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticLight = atc.calcLight(cam);
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderLight = rtc.calcLight(cam);
+
+    CPPUNIT_ASSERT_EQUAL(quads.size(), renderLight.size());
+    CPPUNIT_ASSERT_EQUAL(analyticLight.size(), renderLight.size());
+    for (int i = 0; i < analyticLight.size(); ++i) {
+        // This is messy. Exclude small cases which are error-prone
+        // and then be a little careful about how we calculate
+        // relative error...
+        if (renderLight[i] > 1.0e-5 || analyticLight[i] > 1.0e-5) {
+            double relError = std::fabs(fmin(renderLight[i], analyticLight[i]) /
+                                        fmax(renderLight[i], analyticLight[i]) - 1);
+            // And even then, for a few polys, the relative error is pretty large.
+            CPPUNIT_ASSERT(relError < 0.15);
+        }
+    }
+}
+
+void TransfersTestCase::baseCameraFacesRightWay()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    // Add the face at z = 1.
+    quads.push_back(cubeFaces[5]);
+    // And z = -1.
+    quads.push_back(cubeFaces[4]);
+
+    // Should be able to see the face in front of camera, not behind.
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticLight = atc.calcLight(Camera::baseCamera);
+    CPPUNIT_ASSERT(analyticLight[0] >  0.0);
+    CPPUNIT_ASSERT(analyticLight[1] == 0.0);
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderLight = rtc.calcLight(Camera::baseCamera);
+    CPPUNIT_ASSERT(renderLight[0] >  0.0);
+    CPPUNIT_ASSERT(renderLight[1] == 0.0);
+
+}
+
+void TransfersTestCase::backCameraFacesRightWay()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    // Add the face at z = 1.
+    quads.push_back(cubeFaces[5]);
+    // And z = -1.
+    quads.push_back(cubeFaces[4]);
+
+    Camera cam(Vertex(0.1, -0.1,  0.05),
+               Vertex(0.0,  0.0, -1.0),
+               Vertex(1.0,  0.0,  0.0));
+
+    // Should be able to see the face in front of camera, not behind.
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticLight = atc.calcLight(cam);
+    CPPUNIT_ASSERT(analyticLight[0] == 0.0);
+    CPPUNIT_ASSERT(analyticLight[1] >  0.0);
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderLight = rtc.calcLight(cam);
+    CPPUNIT_ASSERT(renderLight[0] == 0.0);
+    CPPUNIT_ASSERT(renderLight[1] >  0.0);
+}
+
+void TransfersTestCase::calcAllLightsWorks()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> quads;
+    // Add the face at z = 1.
+    quads.push_back(cubeFaces[5]);
+    // And z = -1.
+    quads.push_back(cubeFaces[4]);
+
+    AnalyticTransferCalculator atc(vertices, quads);
+    std::vector<double> analyticLight;
+    atc.calcAllLights(analyticLight);
+    CPPUNIT_ASSERT(isnan(analyticLight[0]));
+    CPPUNIT_ASSERT(analyticLight[1] > 0.0);
+    CPPUNIT_ASSERT(analyticLight[2] > 0.0);
+    CPPUNIT_ASSERT(isnan(analyticLight[3]));
+
+    RenderTransferCalculator rtc(vertices, quads, 512);
+    std::vector<double> renderLight;
+    rtc.calcAllLights(renderLight);
+    CPPUNIT_ASSERT(renderLight[0] == 0.0);
+    CPPUNIT_ASSERT(renderLight[1] >  0.0);
+    CPPUNIT_ASSERT(renderLight[2] >  0.0);
+    CPPUNIT_ASSERT(renderLight[3] == 0.0);
 }

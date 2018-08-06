@@ -190,6 +190,41 @@ std::vector<double> const &RenderTransferCalculator::getSideLightWeights()
     return m_sideLightWeights;
 }
 
+void RenderTransferCalculator::calcAllLights(std::vector<double> &weights)
+{
+    int n = m_faces.size();
+    weights.clear();
+    weights.reserve(n * n);
+
+    // Iterate over targets
+    for (int i = 0; i < n; ++i) {
+        Quad currQuad = m_faces[i];
+        Vertex eye(paraCentre(currQuad, m_vertices));
+        Vertex dir(paraCross(currQuad, m_vertices));
+        Vertex lookAt(eye - dir);
+        Vertex up(upForDir(dir));
+        Camera cam(eye, lookAt, up);
+
+        std::vector<double> faceWeights = calcLight(cam);
+        weights.insert(weights.end(), faceWeights.begin(), faceWeights.end());
+        // Somewhat slow, so print progress.
+        std::cerr << ".";
+    }
+}
+
+Vertex RenderTransferCalculator::upForDir(Vertex const &dir)
+{
+    double ax = fabs(dir.x()), ay = fabs(dir.y()), az = fabs(dir.z());
+    if (ax < ay && ax < az) {
+        return Vertex(1.0, 0.0, 0.0);
+    }
+    if (ay < az) {
+        return Vertex(0.0, 1.0, 0.0);
+    } else {
+        return Vertex(0.0, 0.0, 1.0);
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////
 // Calculate analytic approximations of the transfer functions.
 //
