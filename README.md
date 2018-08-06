@@ -94,7 +94,3 @@ calculations are done using transmission to a few thousand rectangles.
 
 We have empirical evidence that the calculations are about right, and
 can look into bouncing the light around...
-
-## TODOs
-
- * Move to a scheme where visibility feeds into the calculations!

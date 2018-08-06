@@ -145,7 +145,7 @@ int main(int argc, char **argv)
     initGL();
     initGeometry();
     initLighting(faces, vertices);
-    AnalyticTransferCalculator(vertices, faces).calcAllLights(transfers);
+    RenderTransferCalculator(vertices, faces, 512).calcAllLights(transfers);
     double light = 0.0;
     double relChange;
     do {

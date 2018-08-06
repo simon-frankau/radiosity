@@ -16,12 +16,19 @@
 
 #include "glut_wrap.h"
 
+static void doNothing()
+{
+}
+
 int gwTransferSetup(int size)
 {
     // Configure window
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(size, size);
     int win = glutCreateWindow("Transfer calculator");
+    // This is needed as otherwise any glutMainLoop called gets
+    // unhappy, even if we've already destroyed the window.
+    glutDisplayFunc(doNothing);
     // Flat shading.
     glEnable(GL_COLOR_MATERIAL);
     // Use depth buffering for hidden surface elimination.
