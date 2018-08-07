@@ -243,6 +243,19 @@ void scale(double s,
     }
 }
 
+void flip(std::vector<Quad> const &quadsIn,
+          std::vector<Quad> &quadsOut,
+          std::vector<Vertex> &vs)
+{
+    for (int i = 0, n = quadsIn.size(); i < n; ++i) {
+        Quad const &q = quadsIn[i];
+        quadsOut.push_back(Quad(q.indices[3],
+                                q.indices[2],
+                                q.indices[1],
+                                q.indices[0],
+                                q.light));
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////
 // Basic shapes.

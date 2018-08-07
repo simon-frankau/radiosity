@@ -39,6 +39,7 @@ private:
     CPPUNIT_TEST(trivialSubdivideQuad);
     CPPUNIT_TEST(subdivideQuad);
     CPPUNIT_TEST(scaleCube);
+    CPPUNIT_TEST(flipQuad);
     // Cube case
     CPPUNIT_TEST(cubeProperties);
     CPPUNIT_TEST_SUITE_END();
@@ -65,6 +66,7 @@ private:
     void trivialSubdivideQuad();
     void subdivideQuad();
     void scaleCube();
+    void flipQuad();
     // Cube case
     void cubeProperties();
     // Helpers
@@ -305,6 +307,23 @@ void GeomTestCase::subdivideQuad()
         subdivArea += paraArea(qs[i], vs);
     }
     CPPUNIT_ASSERT_DOUBLES_EQUAL(paraArea(q, vs), subdivArea, 1e-9);
+}
+
+void GeomTestCase::flipQuad()
+{
+    std::vector<Vertex> vs;
+    std::vector<Quad> qs;
+    vs.push_back(Vertex(1.0, 0.0, 0.0));
+    vs.push_back(Vertex(1.0, 1.0, 0.0));
+    vs.push_back(Vertex(2.0, 2.0, 0.0));
+    vs.push_back(Vertex(2.0, 1.0, 0.0));
+    qs.push_back(Quad(0, 1, 2, 3, 0.5));
+
+    std::vector<Quad> qs2;
+
+    flip(qs, qs2, vs);
+    vecEquals(paraCross(qs [0], vs),
+              paraCross(qs2[0], vs).scale(-1.0));
 }
 
 void GeomTestCase::scaleCube()
