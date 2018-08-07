@@ -30,7 +30,7 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
          iter != end; ++iter) {
         Vertex c = paraCentre(*iter, vs);
         // Put a big light in the top centre of the box.
-        if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0) {
+        if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0.9) {
             iter->light = iter->brightness = 2.0;
             iter->isEmitter = true;
         }
@@ -91,8 +91,12 @@ static std::vector<double> transfers;
 void initGeometry(void)
 {
     vertices = cubeVertices;
-    for (std::vector<Quad>::const_iterator iter = cubeFaces.begin(),
-             end = cubeFaces.end(); iter != end; ++iter) {
+    std::vector<Quad> tmpFaces(cubeFaces);
+    std::vector<Quad> tmp2Faces;
+    scale(0.4, cubeFaces, tmp2Faces, vertices);
+    flip(tmp2Faces, tmpFaces, vertices);
+    for (std::vector<Quad>::const_iterator iter = tmpFaces.begin(),
+             end = tmpFaces.end(); iter != end; ++iter) {
         subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
     }
 }
