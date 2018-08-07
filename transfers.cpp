@@ -165,10 +165,18 @@ std::vector<double> RenderTransferCalculator::calcLight(Camera const &cam)
     std::vector<double> const &sws = getSideLightWeights();
 
     calcFace(cam, viewFront, fws);
+    // Avoid rendering things we don't need to. Doesn't seem to
+    // actually make rendering go faster! I also tried calling
+    // glutReshapeWindow, similarly didn't affect performance. I only
+    // care about rendering half the scene, but can't make it go much
+    // faster by trying to convince the renderer of this...
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, m_resolution, m_resolution / 2);
     calcFace(cam, viewRight, sws);
     calcFace(cam, viewLeft,  sws);
     calcFace(cam, viewUp,    sws);
     calcFace(cam, viewDown,  sws);
+    glDisable(GL_SCISSOR_TEST);
 
     return m_sums;
 }
