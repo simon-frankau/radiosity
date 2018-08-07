@@ -100,12 +100,11 @@ static const int NUM_CHANS = 4;
 // Sum up value of the pixels, with the given weights.
 void RenderTransferCalculator::sumWeights(std::vector<double> const &weights)
 {
-    std::vector<GLubyte> pixels(NUM_CHANS * m_resolution * m_resolution);
-    glReadPixels(0, 0, m_resolution, m_resolution,
+    std::vector<GLubyte> pixels(NUM_CHANS * weights.size());
+    glReadPixels(0, 0, m_resolution, weights.size() / m_resolution,
                  GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
-    assert(pixels.size() >= weights.size() * NUM_CHANS);
-    for (int i = 0, n = weights.size() * NUM_CHANS; i < n; i += NUM_CHANS) {
+    for (int i = 0, n = pixels.size(); i < n; i += NUM_CHANS) {
         // We're not using that many polys, so skip the low bits.
         int index = (pixels[i] + (pixels[i+1] << 6) + (pixels[i+2] << 12)) >> 2;
         if (index > 0) {
@@ -127,7 +126,7 @@ void RenderTransferCalculator::calcFace(
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     render();
     sumWeights(weights);
-    glutSwapBuffers();
+    // glutSwapBuffers is unnecessary for offscreen calculation.
 }
 
 // Calculate the area subtended by the faces, using a cube map.
