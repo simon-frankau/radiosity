@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <map>
 #include <vector>
 
 #include "geom.h"
@@ -39,6 +40,11 @@ Vertex Vertex::norm() const
 {
     double l = len();
     return Vertex(x() / l, y() / l, z() / l);
+}
+
+Vertex Vertex::scale(double s) const
+{
+    return Vertex(x() * s, y() * s, z() * s);
 }
 
 Vertex Vertex::operator+(Vertex const &rhs) const
@@ -187,6 +193,56 @@ void subdivide(Quad const &quad,
         }
     }
 }
+
+class VertexScaler
+{
+private:
+    double m_scale;
+    std::vector<Vertex> &m_vertices;
+
+    // Cache of vertices scaled already.
+    std::map<int, int> m_scaledVertices;
+
+public:
+    VertexScaler(double scale,
+                 std::vector<Vertex> &vertices)
+        : m_scale(scale), m_vertices(vertices)
+    {
+    }
+
+    int operator()(int i)
+    {
+        // Return cached result is present.
+        std::map<int, int>::const_iterator iter = m_scaledVertices.find(i);
+        if (iter != m_scaledVertices.end()) {
+            return iter->second;
+        }
+        // Else add and return.
+        int j = m_vertices.size();
+        m_scaledVertices[i] = j;
+        m_vertices.push_back(m_vertices[i].scale(m_scale));
+        return j;
+    }
+};
+
+// Scale the given quads.
+void scale(double s,
+           std::vector<Quad> const &quadsIn,
+           std::vector<Quad> &quadsOut,
+           std::vector<Vertex> &vs)
+{
+    VertexScaler m(s, vs);
+
+    for (int i = 0, n = quadsIn.size(); i < n; ++i) {
+        Quad const &q = quadsIn[i];
+        quadsOut.push_back(Quad(m(q.indices[0]),
+                                m(q.indices[1]),
+                                m(q.indices[2]),
+                                m(q.indices[3]),
+                                q.light));
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 // Basic shapes.

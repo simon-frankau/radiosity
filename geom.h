@@ -35,6 +35,7 @@ public:
 
     double len() const;
     Vertex norm() const;
+    Vertex scale(double s) const;
 
     Vertex operator+(Vertex const &rhs) const;
     Vertex operator-(Vertex const &rhs) const;
@@ -97,6 +98,12 @@ void subdivide(Quad const &quad,
                std::vector<Vertex> &vs,
                std::vector<Quad> &qs,
                GLint uCount, GLint vCount);
+
+// Scale the given quads.
+void scale(double s,
+           std::vector<Quad> const &quadsIn,
+           std::vector<Quad> &quadsOut,
+           std::vector<Vertex> &vs);
 
 ////////////////////////////////////////////////////////////////////////
 // Basic shapes.

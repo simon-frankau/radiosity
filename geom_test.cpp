@@ -22,6 +22,7 @@ private:
     CPPUNIT_TEST(getVertexComponents);
     CPPUNIT_TEST(getVertexLength);
     CPPUNIT_TEST(getVertexNorm);
+    CPPUNIT_TEST(vertexScaling);
     CPPUNIT_TEST(vertexAddition);
     CPPUNIT_TEST(vertexSubtraction);
     CPPUNIT_TEST(printVertex);
@@ -37,6 +38,7 @@ private:
     CPPUNIT_TEST(testParaArea);
     CPPUNIT_TEST(trivialSubdivideQuad);
     CPPUNIT_TEST(subdivideQuad);
+    CPPUNIT_TEST(scaleCube);
     // Cube case
     CPPUNIT_TEST(cubeProperties);
     CPPUNIT_TEST_SUITE_END();
@@ -46,6 +48,7 @@ private:
     void getVertexComponents();
     void getVertexLength();
     void getVertexNorm();
+    void vertexScaling();
     void vertexAddition();
     void vertexSubtraction();
     void printVertex();
@@ -61,6 +64,7 @@ private:
     void testParaArea();
     void trivialSubdivideQuad();
     void subdivideQuad();
+    void scaleCube();
     // Cube case
     void cubeProperties();
     // Helpers
@@ -109,6 +113,15 @@ void GeomTestCase::getVertexNorm()
     double rz = v1.x() / v2.x();
     CPPUNIT_ASSERT_DOUBLES_EQUAL(rx, ry, 1e-9);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(rx, rz, 1e-9);
+}
+
+void GeomTestCase::vertexScaling()
+{
+    Vertex v1(1.0, -2.0, 3.0);
+    Vertex v2(v1.scale(-0.5));
+    Vertex v3(-0.5, 1.0, -1.5);
+
+    vecEquals(v2, v3);
 }
 
 void GeomTestCase::vertexAddition()
@@ -292,6 +305,18 @@ void GeomTestCase::subdivideQuad()
         subdivArea += paraArea(qs[i], vs);
     }
     CPPUNIT_ASSERT_DOUBLES_EQUAL(paraArea(q, vs), subdivArea, 1e-9);
+}
+
+void GeomTestCase::scaleCube()
+{
+    std::vector<Vertex> vertices(cubeVertices);
+    std::vector<Quad> faces;
+
+    scale(0.5, cubeFaces, faces, vertices);
+    // Right now, only check the appropriate number of faces and
+    // vertices are present.
+    CPPUNIT_ASSERT_EQUAL(faces.size(), cubeFaces.size());
+    CPPUNIT_ASSERT_EQUAL(vertices.size(), 2 * cubeVertices.size());
 }
 
 void GeomTestCase::cubeProperties()
