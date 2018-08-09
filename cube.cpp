@@ -17,6 +17,7 @@
 
 #include "geom.h"
 #include "glut_wrap.h"
+#include "rendering.h"
 #include "transfers.h"
 
 // Relative change in total light in the scene by the point we stop
@@ -25,7 +26,7 @@ const double CONVERGENCE_TARGET = 0.001;
 
 // Break up each base quad into subdivision^2 subquads for radiosity
 // calculations.
-GLint const SUBDIVISION = 32;
+GLint const SUBDIVISION = 8;
 
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations
@@ -119,52 +120,10 @@ void initGeometry(void)
     }
 }
 
-void drawBox(void)
-{
-    for (std::vector<Quad>::const_iterator iter = faces.begin(),
-             end = faces.end(); iter != end; ++iter) {
-        iter->render(vertices);
-    }
-}
-
-void display(void)
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    drawBox();
-    glutSwapBuffers();
-}
-
-void initGL(void)
-{
-    // Flat shading.
-    glEnable(GL_COLOR_MATERIAL);
-    // Use depth buffering for hidden surface elimination.
-    glEnable(GL_DEPTH_TEST);
-    // Back-face culling.
-    glEnable(GL_CULL_FACE);
-
-    // Setup the view of the cube. Will become a view from inside the
-    // cube.
-    glMatrixMode(GL_PROJECTION);
-    gluPerspective(45.0,  // Field of view in degrees
-                   1.0,   // Aspect ratio
-                   1.0,   // Z near
-                   10.0); // Z far
-    glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, -3.0, // Eye position
-              0.0, 0.0,  0.0, // Looking at
-              0.0, 1.0,  0.); // Up is in positive Y direction
-}
-
 int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-    glutInitWindowSize(512, 512);
-    glutCreateWindow("Radiosity demo");
 
-    glutDisplayFunc(display);
-    initGL();
     initGeometry();
     initLighting(faces, vertices);
     RenderTransferCalculator(vertices, faces, 256).calcAllLights(transfers);
@@ -178,6 +137,6 @@ int main(int argc, char **argv)
         std::cout << "Total light: " << light << std::endl;
     } while (relChange > CONVERGENCE_TARGET);
 
-    glutMainLoop();
+    render(faces, vertices);
     return 0;
 }
