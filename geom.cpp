@@ -268,33 +268,25 @@ public:
 
 // Scale the given quads.
 void scale(double s,
-           std::vector<Quad> const &quadsIn,
-           std::vector<Quad> &quadsOut,
+           std::vector<Quad> &qs,
            std::vector<Vertex> &vs)
 {
     VertexScaler m(s, vs);
 
-    for (int i = 0, n = quadsIn.size(); i < n; ++i) {
-        Quad const &q = quadsIn[i];
-        quadsOut.push_back(Quad(m(q.indices[0]),
-                                m(q.indices[1]),
-                                m(q.indices[2]),
-                                m(q.indices[3]),
-                                q.light));
+    for (int i = 0, n = qs.size(); i < n; ++i) {
+        Quad &q = qs[i];
+        for (int j = 0; j < 4; ++j) {
+            q.indices[j] = m(q.indices[j]);
+        }
     }
 }
 
-void flip(std::vector<Quad> const &quadsIn,
-          std::vector<Quad> &quadsOut,
+void flip(std::vector<Quad> &qs,
           std::vector<Vertex> &vs)
 {
-    for (int i = 0, n = quadsIn.size(); i < n; ++i) {
-        Quad const &q = quadsIn[i];
-        quadsOut.push_back(Quad(q.indices[3],
-                                q.indices[2],
-                                q.indices[1],
-                                q.indices[0],
-                                q.light));
+    for (int i = 0, n = qs.size(); i < n; ++i) {
+        Quad &q = qs[i];
+        std::swap(q.indices[1], q.indices[3]);
     }
 }
 
@@ -341,19 +333,16 @@ public:
 // Rotate the given quads.
 void rotate(Vertex const &axis,
             double angle,
-            std::vector<Quad> const &quadsIn,
-            std::vector<Quad> &quadsOut,
+            std::vector<Quad> &qs,
             std::vector<Vertex> &vs)
 {
     VertexRotater m(axis, angle, vs);
 
-    for (int i = 0, n = quadsIn.size(); i < n; ++i) {
-        Quad const &q = quadsIn[i];
-        quadsOut.push_back(Quad(m(q.indices[0]),
-                                m(q.indices[1]),
-                                m(q.indices[2]),
-                                m(q.indices[3]),
-                                q.light));
+    for (int i = 0, n = qs.size(); i < n; ++i) {
+        Quad &q = qs[i];
+        for (int j = 0; j < 4; ++j) {
+            q.indices[j] = m(q.indices[j]);
+        }
     }
 }
 

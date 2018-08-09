@@ -103,22 +103,19 @@ void subdivide(Quad const &quad,
                std::vector<Quad> &qs,
                GLint uCount, GLint vCount);
 
-// Scale the given quads.
+// Scale the given quads, in-place.
 void scale(double s,
-           std::vector<Quad> const &quadsIn,
-           std::vector<Quad> &quadsOut,
+           std::vector<Quad> &qs,
            std::vector<Vertex> &vs);
 
-// Rotate the given quads.
+// Rotate the given quads, in-place.
 void rotate(Vertex const &axis,
             double angle,
-            std::vector<Quad> const &quadsIn,
-            std::vector<Quad> &quadsOut,
+            std::vector<Quad> &qs,
             std::vector<Vertex> &vs);
 
-// Flip the facing direction of the given quads.
-void flip(std::vector<Quad> const &quadsIn,
-          std::vector<Quad> &quadsOut,
+// Flip the facing direction of the given quads, in-place.
+void flip(std::vector<Quad> &qs,
           std::vector<Vertex> &vs);
 
 ////////////////////////////////////////////////////////////////////////

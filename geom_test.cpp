@@ -343,9 +343,9 @@ void GeomTestCase::flipQuad()
     vs.push_back(Vertex(2.0, 1.0, 0.0));
     qs.push_back(Quad(0, 1, 2, 3, 0.5));
 
-    std::vector<Quad> qs2;
+    std::vector<Quad> qs2(qs);
 
-    flip(qs, qs2, vs);
+    flip(qs2, vs);
     vecEquals(paraCross(qs [0], vs),
               paraCross(qs2[0], vs).scale(-1.0));
 }
@@ -353,9 +353,9 @@ void GeomTestCase::flipQuad()
 void GeomTestCase::scaleCube()
 {
     std::vector<Vertex> vertices(cubeVertices);
-    std::vector<Quad> faces;
+    std::vector<Quad> faces(cubeFaces);
 
-    scale(0.5, cubeFaces, faces, vertices);
+    scale(0.5, faces, vertices);
     // Right now, only check the appropriate number of faces and
     // vertices are present.
     CPPUNIT_ASSERT_EQUAL(faces.size(), cubeFaces.size());
@@ -375,9 +375,9 @@ void GeomTestCase::testRotation()
         Quad(0, 1, 2, 3, 1.0)
     };
 
-    std::vector<Quad> res;
-    rotate(Vertex(1.0, 1.0, 0.0), M_PI / 2.0, qs, res, vs);
-    Quad const &q = res[0];
+    rotate(Vertex(1.0, 1.0, 0.0), M_PI / 2.0, qs, vs);
+    CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
+    Quad const &q = qs[0];
     double rt = sqrt(0.5);
     vecEquals(Vertex( 0.5, 0.5,  rt), vs[q.indices[0]]);
     vecEquals(Vertex( 0.5, 0.5, -rt), vs[q.indices[1]]);
