@@ -15,7 +15,6 @@
 #include <GL/glut.h>
 #endif
 
-#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -147,14 +146,6 @@ std::vector<double> RenderTransferCalculator::calcSubtended(Camera const &cam)
     return m_sums;
 }
 
-std::vector<double> const &RenderTransferCalculator::getSubtendWeights()
-{
-    if (m_subtendWeights.empty()) {
-        calcSubtendWeights(m_resolution, m_subtendWeights);
-    }
-    return m_subtendWeights;
-}
-
 // Calculate the light received, using half a cube map.
 std::vector<double> RenderTransferCalculator::calcLight(Camera const &cam)
 {
@@ -181,6 +172,14 @@ std::vector<double> RenderTransferCalculator::calcLight(Camera const &cam)
     return m_sums;
 }
 
+std::vector<double> const &RenderTransferCalculator::getSubtendWeights()
+{
+    if (m_subtendWeights.empty()) {
+        calcSubtendWeights(m_resolution, m_subtendWeights);
+    }
+    return m_subtendWeights;
+}
+
 std::vector<double> const &RenderTransferCalculator::getForwardLightWeights()
 {
     if (m_forwardLightWeights.empty()) {
@@ -199,7 +198,7 @@ std::vector<double> const &RenderTransferCalculator::getSideLightWeights()
 
 void RenderTransferCalculator::calcAllLights(std::vector<double> &weights)
 {
-    int n = m_faces.size();
+    int const n = m_faces.size();
     weights.clear();
     weights.reserve(n * n);
 
@@ -263,7 +262,7 @@ double AnalyticTransferCalculator::calcSingleQuadSubtended(
 
 void AnalyticTransferCalculator::calcAllLights(std::vector<double> &weights)
 {
-    int n = m_faces.size();
+    int const n = m_faces.size();
     weights.clear();
     weights.reserve(n * n);
     Vertex up(0.0, 0.0, 0.0);

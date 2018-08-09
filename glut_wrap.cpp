@@ -92,11 +92,11 @@ void gwRenderOnce(void (*f)())
     } catch (BreakException &e) {
     }
 #else
-    // MacOS, however, supports glutCheckLoop. This just manages the
-    // event loop. It doesn't render unless necessary, and rendering
-    // for the purposes of reading the buffer back out works fine by
-    // just making OpenGL calls directly, outside the event loop. So,
-    // let's just do that.
+    // On MacOS glutCheckLoop looks like an alternative. However, this
+    // just manages the event loop. It doesn't render unless
+    // necessary, and rendering for the purposes of reading the buffer
+    // back out works fine by just making OpenGL calls directly,
+    // outside the event loop. So, let's just do that.
     f();
 #endif
 }

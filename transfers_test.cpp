@@ -19,6 +19,7 @@ class TransfersTestCase : public CppUnit::TestCase
 {
 private:
     const int RESOLUTION = 512;
+    const int SUBDIVISION = 32;
 
     CPPUNIT_TEST_SUITE(TransfersTestCase);
     CPPUNIT_TEST(renderEachFaceIsAreaOne);
@@ -94,7 +95,7 @@ void TransfersTestCase::analyticSubtendedTotalAreaIsSix()
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> quads;
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+        subdivide(cubeFaces[i], vertices, quads, SUBDIVISION, SUBDIVISION);
     }
     AnalyticTransferCalculator tc(vertices, quads);
     std::vector<double> sums = tc.calcSubtended(Camera::baseCamera);
@@ -102,7 +103,7 @@ void TransfersTestCase::analyticSubtendedTotalAreaIsSix()
     for (int i = 0; i < sums.size(); ++i) {
         total += sums[i];
     }
-    // Tolerance is roughly of order 1/(32*32).
+    // Tolerance is roughly of order 1/(SUBDIVISION*SUBDIVISION).
     CPPUNIT_ASSERT_DOUBLES_EQUAL(6.0, total, 2.0e-3);
 }
 
@@ -111,7 +112,7 @@ void TransfersTestCase::analyticVsRenderSubtended()
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> quads;
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+        subdivide(cubeFaces[i], vertices, quads, SUBDIVISION, SUBDIVISION);
     }
     AnalyticTransferCalculator atc(vertices, quads);
     std::vector<double> analyticAreas = atc.calcSubtended(Camera::baseCamera);
@@ -135,7 +136,7 @@ void TransfersTestCase::analyticVsRenderSubtendedOffCentre()
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> quads;
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+        subdivide(cubeFaces[i], vertices, quads, SUBDIVISION, SUBDIVISION);
     }
     AnalyticTransferCalculator atc(vertices, quads);
     std::vector<double> analyticAreas = atc.calcSubtended(cam);
@@ -188,7 +189,7 @@ void TransfersTestCase::analyticTotalLightIsOne()
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> quads;
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+        subdivide(cubeFaces[i], vertices, quads, SUBDIVISION, SUBDIVISION);
     }
     AnalyticTransferCalculator tc(vertices, quads);
     std::vector<double> sums = tc.calcLight(Camera::baseCamera);
@@ -196,7 +197,7 @@ void TransfersTestCase::analyticTotalLightIsOne()
     for (int i = 0; i < sums.size(); ++i) {
         total += sums[i];
     }
-    // Tolerance is roughly of order 1/(32*32).
+    // Tolerance is roughly of order 1/(SUBDIVISION*SUBDIVISION).
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, total, 1.0e-3);
 }
 
@@ -205,7 +206,7 @@ void TransfersTestCase::analyticVsRenderLight()
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> quads;
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+        subdivide(cubeFaces[i], vertices, quads, SUBDIVISION, SUBDIVISION);
     }
 
     AnalyticTransferCalculator atc(vertices, quads);
@@ -230,7 +231,7 @@ void TransfersTestCase::analyticVsRenderLight2()
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> quads;
     for (int i = 0, n = cubeFaces.size(); i < n; ++i) {
-        subdivide(cubeFaces[i], vertices, quads, 32, 32);
+        subdivide(cubeFaces[i], vertices, quads, SUBDIVISION, SUBDIVISION);
     }
 
     Camera cam(Vertex(0.1, -0.1, 0.05),

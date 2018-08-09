@@ -19,8 +19,6 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "glut_wrap.h"
-
 CppUnit::Test *suite()
 {
     CppUnit::TestFactoryRegistry &registry =

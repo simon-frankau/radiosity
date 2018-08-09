@@ -18,21 +18,21 @@ private:
     const int RESOLUTION = 512;
 
     CPPUNIT_TEST_SUITE(WeightingTestCase);
-    CPPUNIT_TEST(projSubtendWeightsSumToOne);
-    CPPUNIT_TEST(calcSubtendWeightsSumToOne);
-    CPPUNIT_TEST(weightsMatch);
-    CPPUNIT_TEST(calcLightWeightsSumToOne);
+    CPPUNIT_TEST(testProjSubtendWeightsSumToOne);
+    CPPUNIT_TEST(testCalcSubtendWeightsSumToOne);
+    CPPUNIT_TEST(testWeightsMatch);
+    CPPUNIT_TEST(testCalcLightWeightsSumToOne);
     CPPUNIT_TEST_SUITE_END();
 
-    void projSubtendWeightsSumToOne();
-    void calcSubtendWeightsSumToOne();
-    void weightsMatch();
-    void calcLightWeightsSumToOne();
+    void testProjSubtendWeightsSumToOne();
+    void testCalcSubtendWeightsSumToOne();
+    void testWeightsMatch();
+    void testCalcLightWeightsSumToOne();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(WeightingTestCase, "WeightingTestCase");
 
-void WeightingTestCase::projSubtendWeightsSumToOne()
+void WeightingTestCase::testProjSubtendWeightsSumToOne()
 {
     std::vector<double> weights;
     projSubtendWeights(RESOLUTION, weights);
@@ -43,7 +43,7 @@ void WeightingTestCase::projSubtendWeightsSumToOne()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, total, 1.0e-5);
 }
 
-void WeightingTestCase::calcSubtendWeightsSumToOne()
+void WeightingTestCase::testCalcSubtendWeightsSumToOne()
 {
     std::vector<double> weights;
     calcSubtendWeights(RESOLUTION, weights);
@@ -54,7 +54,7 @@ void WeightingTestCase::calcSubtendWeightsSumToOne()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, total, 1.0e-5);
 }
 
-void WeightingTestCase::weightsMatch()
+void WeightingTestCase::testWeightsMatch()
 {
     std::vector<double> ws, ws2;
     projSubtendWeights(RESOLUTION, ws);
@@ -65,7 +65,7 @@ void WeightingTestCase::weightsMatch()
     }
 }
 
-void WeightingTestCase::calcLightWeightsSumToOne()
+void WeightingTestCase::testCalcLightWeightsSumToOne()
 {
     std::vector<double> frontWeights;
     calcForwardLightWeights(RESOLUTION, frontWeights);

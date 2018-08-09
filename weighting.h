@@ -24,7 +24,7 @@ void calcSubtendWeights(int resolution, std::vector<double> &weights);
 void calcForwardLightWeights(int resolution, std::vector<double> &weights);
 
 // Calculate sideways-facing weights. Like calcForwardLightWeights,
-// but for the sideways face cube maps.
+// but for the sideways-facing cube maps.
 void calcSideLightWeights(int resolution, std::vector<double> &weights);
 
 #endif // RADIOSITY_WEIGHTING_H

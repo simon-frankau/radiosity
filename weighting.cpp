@@ -6,7 +6,7 @@
 // Copyright (c) Simon Frankau 2018
 //
 
-#include <math.h>
+#include <cmath>
 
 #include "geom.h"
 #include "weighting.h"
@@ -81,14 +81,13 @@ void calcForwardLightWeights(int resolution, std::vector<double> &weights)
             double xFactor = 1.0 / (1.0 + distSq);
             // We multiply in an extra sqrt(xFactor) to get what we need,
             // which turns the whole thing into an extra xFactor.
-            weights.push_back(weight * conv * conv *
-                              xFactor * xFactor);
+            weights.push_back(weight * conv * conv * xFactor * xFactor);
         }
     }
 }
 
 // Calculate sideways-facing weights. Like calcForwardLightWeights,
-// but for the sideways face cube maps.
+// but for the sideways-facing cube maps.
 void calcSideLightWeights(int resolution, std::vector<double> &weights)
 {
     double conv = 2.0 / resolution;
@@ -102,8 +101,7 @@ void calcSideLightWeights(int resolution, std::vector<double> &weights)
             double distSq = px * px + py * py;
             double xFactor = 1.0 / (1.0 + distSq);
             // The extra weighting needed for the extra cos is yFactor * -py.
-            weights.push_back(weight * conv * conv *
-                              xFactor * xFactor * -py);
+            weights.push_back(weight * conv * conv * xFactor * xFactor * -py);
         }
     }
 }

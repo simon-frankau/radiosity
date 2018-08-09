@@ -21,8 +21,12 @@ public:
 
     virtual ~RenderTransferCalculator();
 
+    // Calculate the subtended-angle and incoming light from a
+    // particular camera view.
     std::vector<double> calcSubtended(Camera const &cam);
     std::vector<double> calcLight(Camera const &cam);
+    // Calculate the light for all polys, as if we have a camera at
+    // each poly.
     void calcAllLights(std::vector<double> &weights);
 
 private:
@@ -34,11 +38,10 @@ private:
                   viewFn_t view,
                   std::vector<double> const &weights);
 
+    // Caches of weights.
     std::vector<double> const &getSubtendWeights();
     std::vector<double> const &getForwardLightWeights();
     std::vector<double> const &getSideLightWeights();
-
-    static Vertex upForDir(Vertex const &dir);
 
     // Geometry.
     std::vector<Vertex> const &m_vertices;
@@ -57,6 +60,8 @@ private:
     std::vector<double> m_sums;
 };
 
+// Calculate an analytic approximation. Assume nothing obscuring the
+// view, and the polys are small.
 class AnalyticTransferCalculator
 {
 public:
