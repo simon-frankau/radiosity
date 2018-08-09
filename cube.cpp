@@ -40,6 +40,12 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
             iter->materialColour = iter->screenColour = Colour(2.0, 2.0, 2.0);
             iter->isEmitter = true;
         }
+        // Make the left wall red, the right wall blue.
+        if (c.x() < -0.999) {
+            iter->materialColour = iter->materialColour * Colour(1.0, 0.5, 0.5);
+        } else if (c.x() > 0.999) {
+            iter->materialColour = iter->materialColour * Colour(0.5, 0.5, 1.0);
+        }
     }
 }
 
