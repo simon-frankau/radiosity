@@ -103,7 +103,13 @@ static std::vector<double> transfers;
 void initGeometry(void)
 {
     vertices = cubeVertices;
-    // Start with the inner cube: Take the basic scene cube, scale it
+    // Draw the outer 'scene' cube, by subdividing the prototype.
+    for (std::vector<Quad>::const_iterator iter = cubeFaces.begin(),
+             end = cubeFaces.end(); iter != end; ++iter) {
+        subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
+    }
+
+    // Then draw the inner cube: Take the basic scene cube, scale it
     // down, rotate and move it...
     std::vector<Quad> sceneFaces(cubeFaces); // Enclosed cube
     scale(0.4, sceneFaces, vertices);
@@ -111,12 +117,11 @@ void initGeometry(void)
     rotate(Vertex(1.0, 0.0, 0.0), M_PI / 3.0, sceneFaces, vertices);
     rotate(Vertex(0.0, 0.0, 1.0), M_PI / 6.0, sceneFaces, vertices);
     translate(Vertex(0.0, -0.25, 0.0), sceneFaces, vertices);
-    // Then add in the scene-holding cube.
-    sceneFaces.insert(sceneFaces.end(), cubeFaces.begin(), cubeFaces.end());
-    // Finally, copy the subdivided version into 'faces'.
+    // Copy the subdivided version into 'faces' (lower subdivisions,
+    // as smaller).
     for (std::vector<Quad>::const_iterator iter = sceneFaces.begin(),
              end = sceneFaces.end(); iter != end; ++iter) {
-        subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
+        subdivide(*iter, vertices, faces, SUBDIVISION / 2, SUBDIVISION / 2);
     }
 }
 
