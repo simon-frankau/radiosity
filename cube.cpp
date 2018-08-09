@@ -92,9 +92,12 @@ void initGeometry(void)
 {
     vertices = cubeVertices;
     std::vector<Quad> tmpFaces(cubeFaces);
-    std::vector<Quad> tmp2Faces;
+    std::vector<Quad> tmp2Faces, tmp3Faces;
     scale(0.4, cubeFaces, tmp2Faces, vertices);
-    flip(tmp2Faces, tmpFaces, vertices);
+    flip(tmp2Faces, tmp3Faces, vertices);
+    tmp2Faces.clear();
+    rotate(Vertex(1.0, 0.0, 0.0), M_PI / 3.0, tmp3Faces, tmp2Faces, vertices);
+    rotate(Vertex(0.0, 0.0, 1.0), M_PI / 6.0, tmp2Faces, tmpFaces, vertices);
     for (std::vector<Quad>::const_iterator iter = tmpFaces.begin(),
              end = tmpFaces.end(); iter != end; ++iter) {
         subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
