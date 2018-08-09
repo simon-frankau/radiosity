@@ -209,26 +209,13 @@ void RenderTransferCalculator::calcAllLights(std::vector<double> &weights)
         Vertex eye(paraCentre(currQuad, m_vertices));
         Vertex dir(paraCross(currQuad, m_vertices));
         Vertex lookAt(eye - dir);
-        Vertex up(upForDir(dir));
+        Vertex up(dir.perp());
         Camera cam(eye, lookAt, up);
 
         std::vector<double> faceWeights = calcLight(cam);
         weights.insert(weights.end(), faceWeights.begin(), faceWeights.end());
         // Somewhat slow, so print progress.
         std::cerr << ".";
-    }
-}
-
-Vertex RenderTransferCalculator::upForDir(Vertex const &dir)
-{
-    double ax = fabs(dir.x()), ay = fabs(dir.y()), az = fabs(dir.z());
-    if (ax < ay && ax < az) {
-        return Vertex(1.0, 0.0, 0.0);
-    }
-    if (ay < az) {
-        return Vertex(0.0, 1.0, 0.0);
-    } else {
-        return Vertex(0.0, 0.0, 1.0);
     }
 }
 
