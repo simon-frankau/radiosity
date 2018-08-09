@@ -20,6 +20,8 @@
 static const int WIDTH = 512;
 static const int HEIGHT = 512;
 
+static const Vertex EYE_POS = Vertex(0.0, 0.0, -3.0);
+
 static std::vector<Quad> faces;
 static std::vector<Vertex> vertices;
 
@@ -102,9 +104,40 @@ static void initGL(void)
                    1.0,   // Z near
                    10.0); // Z far
     glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, -3.0, // Eye position
-              0.0, 0.0,  0.0, // Looking at
-              0.0, 1.0,  0.); // Up is in positive Y direction
+    gluLookAt(EYE_POS.x(), EYE_POS.y(), EYE_POS.z(),
+              0.0, 0.0,  0.0,  // Looking at origin
+              0.0, 1.0,  0.0); // Up is in positive Y direction
+}
+
+static bool facesUs(Quad const &q, std::vector<Vertex> const &vs)
+{
+    return dot(paraCentre(q, vs) - EYE_POS,
+               paraCross(q, vs)) > 0;
+}
+
+// Normalise the brightness of non-emitting components
+void normaliseBrightness(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
+{
+    const double TARGET = 1.0;
+
+    double max = 0.0;
+    for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
+         iter != end; ++iter) {
+        // Only include non-emitters, facing us.
+        if (!iter->isEmitter && facesUs(*iter, vs)) {
+            max = std::max(max, iter->screenColour.r);
+            max = std::max(max, iter->screenColour.g);
+            max = std::max(max, iter->screenColour.b);
+        }
+    }
+
+    double scale = max < TARGET ? TARGET / max : 1.0;
+    for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
+         iter != end; ++iter) {
+        if (!iter->isEmitter) {
+            iter->screenColour = iter->screenColour * scale;
+        }
+    }
 }
 
 void render(std::vector<Quad> f, std::vector<Vertex> v)

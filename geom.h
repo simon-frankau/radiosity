@@ -50,7 +50,7 @@ Vertex cross(Vertex const &v1, Vertex const &v2);
 double dot(Vertex const &v1, Vertex const &v2);
 
 // Orthogonalise v1, taking away the v2 component.
-Vertex  orthog(Vertex const &v1, Vertex const &v2);
+Vertex orthog(Vertex const &v1, Vertex const &v2);
 
 // Linear interpolation. 0 returns v1, 1 returns v2.
 Vertex lerp(Vertex const &v1, Vertex const &v2, double i);

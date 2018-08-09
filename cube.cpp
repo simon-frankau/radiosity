@@ -137,6 +137,7 @@ int main(int argc, char **argv)
         std::cout << "Total light: " << light << std::endl;
     } while (relChange > CONVERGENCE_TARGET);
 
+    normaliseBrightness(faces, vertices);
     render(faces, vertices);
     return 0;
 }
