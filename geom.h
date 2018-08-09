@@ -109,6 +109,13 @@ void scale(double s,
            std::vector<Quad> &quadsOut,
            std::vector<Vertex> &vs);
 
+// Rotate the given quads.
+void rotate(Vertex const &axis,
+            double angle,
+            std::vector<Quad> const &quadsIn,
+            std::vector<Quad> &quadsOut,
+            std::vector<Vertex> &vs);
+
 // Flip the facing direction of the given quads.
 void flip(std::vector<Quad> const &quadsIn,
           std::vector<Quad> &quadsOut,

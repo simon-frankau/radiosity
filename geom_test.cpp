@@ -41,6 +41,7 @@ private:
     CPPUNIT_TEST(trivialSubdivideQuad);
     CPPUNIT_TEST(subdivideQuad);
     CPPUNIT_TEST(scaleCube);
+    CPPUNIT_TEST(testRotation);
     CPPUNIT_TEST(flipQuad);
     // Cube case
     CPPUNIT_TEST(cubeProperties);
@@ -70,6 +71,7 @@ private:
     void trivialSubdivideQuad();
     void subdivideQuad();
     void scaleCube();
+    void testRotation();
     void flipQuad();
     // Cube case
     void cubeProperties();
@@ -358,6 +360,29 @@ void GeomTestCase::scaleCube()
     // vertices are present.
     CPPUNIT_ASSERT_EQUAL(faces.size(), cubeFaces.size());
     CPPUNIT_ASSERT_EQUAL(vertices.size(), 2 * cubeVertices.size());
+}
+
+void GeomTestCase::testRotation()
+{
+    // Three vertices away from axis, plus one on the axis.
+    std::vector<Vertex> vs = {
+        Vertex(1.0, 0.0, 0.0),
+        Vertex(0.0, 1.0, 0.0),
+        Vertex(0.0, 0.0, 1.0),
+        Vertex(1.0, 1.0, 0.0)
+    };
+    std::vector<Quad> qs = {
+        Quad(0, 1, 2, 3, 1.0)
+    };
+
+    std::vector<Quad> res;
+    rotate(Vertex(1.0, 1.0, 0.0), M_PI / 2.0, qs, res, vs);
+    Quad const &q = res[0];
+    double rt = sqrt(0.5);
+    vecEquals(Vertex( 0.5, 0.5,  rt), vs[q.indices[0]]);
+    vecEquals(Vertex( 0.5, 0.5, -rt), vs[q.indices[1]]);
+    vecEquals(Vertex( -rt, rt,  0.0), vs[q.indices[2]]);
+    vecEquals(Vertex( 1.0, 1.0, 0.0), vs[q.indices[3]]);
 }
 
 void GeomTestCase::cubeProperties()

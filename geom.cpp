@@ -298,6 +298,65 @@ void flip(std::vector<Quad> const &quadsIn,
     }
 }
 
+class VertexRotater : public VertexTransformer
+{
+private:
+    double m_angle;
+    // m_axis, m_plane1 and m_plane 2 form an orthonormal basis, where
+    // m_plane1 and m_plane2 are the plane of rotation.
+    Vertex m_axis;
+    Vertex m_plane1;
+    Vertex m_plane2;
+
+    virtual Vertex transform(Vertex const &v)
+    {
+        // Decompase v to our rotation's basis.
+        double x = dot(v, m_plane1);
+        double y = dot(v, m_plane2);
+        double z = dot(v, m_axis);
+        // Perform the rotation in the x-y plane
+        double c = cos(m_angle);
+        double s = sin(m_angle);
+        double x2 =  c * x + s * y;
+        double y2 = -s * x + c * y;
+        // And construct a vector in the original basis.
+        return m_plane1.scale(x2) +
+            m_plane2.scale(y2) +
+            m_axis.scale(z);
+    }
+
+public:
+    VertexRotater(Vertex const &axis,
+                  double angle,
+                  std::vector<Vertex> &vertices)
+        : m_angle(angle),
+          m_axis(axis.norm()),
+          m_plane1(m_axis.perp().norm()),
+          m_plane2(cross(m_axis, m_plane1)),
+          VertexTransformer(vertices)
+    {
+    }
+};
+
+// Rotate the given quads.
+void rotate(Vertex const &axis,
+            double angle,
+            std::vector<Quad> const &quadsIn,
+            std::vector<Quad> &quadsOut,
+            std::vector<Vertex> &vs)
+{
+    VertexRotater m(axis, angle, vs);
+
+    for (int i = 0, n = quadsIn.size(); i < n; ++i) {
+        Quad const &q = quadsIn[i];
+        quadsOut.push_back(Quad(m(q.indices[0]),
+                                m(q.indices[1]),
+                                m(q.indices[2]),
+                                m(q.indices[3]),
+                                q.light));
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////
 // Basic shapes.
 
