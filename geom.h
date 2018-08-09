@@ -56,6 +56,27 @@ Vertex  orthog(Vertex const &v1, Vertex const &v2);
 Vertex lerp(Vertex const &v1, Vertex const &v2, double i);
 
 ////////////////////////////////////////////////////////////////////////
+// Colours
+
+// Simple red, green and blue components aren't particularly
+// realistic, physically, but they'll do for us.
+class Colour
+{
+public:
+    Colour(double red, double green, double blue);
+    Colour(Colour const &c);
+    Colour();
+
+    Colour operator*(double x) const;
+    Colour operator*(Colour const &c) const;
+    Colour &operator+=(Colour const &c);
+
+    double asGrey() const;
+
+    double r, g, b;
+};
+
+////////////////////////////////////////////////////////////////////////
 // And a quadrilateral
 
 class Quad
@@ -63,7 +84,7 @@ class Quad
 public:
     Quad(GLint v1, GLint v2,
          GLint v3, GLint v4,
-         double l);
+         Colour const &c);
 
     void render(std::vector<Vertex> const &v) const;
     // For transfer calculations.
@@ -73,9 +94,9 @@ public:
     // Does this quad emit light, or just reflect?
     bool isEmitter;
     // How much light it emits, or the fraction reflected.
-    double light;
-    // On-screen brightness.
-    double brightness;
+    Colour materialColour;
+    // On-screen colour.
+    Colour screenColour;
 };
 
 // Return the centre of the quad. Assumes paralellogram.

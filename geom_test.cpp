@@ -16,6 +16,8 @@
 class GeomTestCase : public CppUnit::TestCase
 {
 private:
+    static Colour const TEST_COLOUR;
+
     CPPUNIT_TEST_SUITE(GeomTestCase);
     // Vertex cases
     CPPUNIT_TEST(testVertexCopy);
@@ -80,6 +82,8 @@ private:
     // Helpers
     void assertVectorsEqual(Vertex const &v1, Vertex const &v2);
 };
+
+Colour const GeomTestCase::TEST_COLOUR = Colour(0.1, 0.2, 0.3);
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(GeomTestCase, "GeomTestCase");
 
@@ -250,14 +254,18 @@ void GeomTestCase::testVertexLerp()
 
 void GeomTestCase::testQuadConstruct()
 {
-    Quad q(1, 2, 3, 4, 0.5);
+    Quad q(1, 2, 3, 4, TEST_COLOUR);
     CPPUNIT_ASSERT_EQUAL(1, q.indices[0]);
     CPPUNIT_ASSERT_EQUAL(2, q.indices[1]);
     CPPUNIT_ASSERT_EQUAL(3, q.indices[2]);
     CPPUNIT_ASSERT_EQUAL(4, q.indices[3]);
     CPPUNIT_ASSERT_EQUAL(false, q.isEmitter);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.5, q.light,      1e-9);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, q.brightness, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.r, q.materialColour.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.g, q.materialColour.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.b, q.materialColour.b, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, q.screenColour.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, q.screenColour.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, q.screenColour.b, 1e-9);
 }
 
 void GeomTestCase::testParaCentre()
@@ -267,7 +275,7 @@ void GeomTestCase::testParaCentre()
     vs.push_back(Vertex(1.0, 1.0, 0.0));
     vs.push_back(Vertex(2.0, 2.0, 0.0));
     vs.push_back(Vertex(2.0, 1.0, 0.0));
-    Quad q(0, 1, 2, 3, 0.5);
+    Quad q(0, 1, 2, 3, TEST_COLOUR);
     Vertex vc(1.5, 1.0, 0.0);
     assertVectorsEqual(vc, paraCentre(q, vs));
 }
@@ -279,7 +287,7 @@ void GeomTestCase::testParaCross()
     vs.push_back(Vertex(1.0, 1.0, 0.0));
     vs.push_back(Vertex(2.0, 2.0, 0.0));
     vs.push_back(Vertex(2.0, 1.0, 0.0));
-    Quad q(0, 1, 2, 3, 0.5);
+    Quad q(0, 1, 2, 3, TEST_COLOUR);
     Vertex vc(0.0, 0.0, 1.0);
     assertVectorsEqual(vc, paraCross(q, vs));
 }
@@ -291,7 +299,7 @@ void GeomTestCase::testParaArea()
     vs.push_back(Vertex(1.0, 1.0, 0.0));
     vs.push_back(Vertex(2.0, 2.0, 0.0));
     vs.push_back(Vertex(2.0, 1.0, 0.0));
-    Quad q(0, 1, 2, 3, 0.5);
+    Quad q(0, 1, 2, 3, TEST_COLOUR);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, paraArea(q, vs), 1e-9);
 }
 
@@ -305,7 +313,7 @@ void GeomTestCase::testQuadTrivialSubdivision()
     vs.push_back(Vertex(1.0, 5.0, 5.0));
     vs.push_back(Vertex(1.0, 1.0, 5.0));
 
-    Quad q(0, 1, 2, 3, 0.5);
+    Quad q(0, 1, 2, 3, TEST_COLOUR);
     subdivide(q, vs, qs, 1, 1);
 
     CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
@@ -313,7 +321,9 @@ void GeomTestCase::testQuadTrivialSubdivision()
     for (int i = 0; i < 4; ++i) {
         assertVectorsEqual(vs[q.indices[i]], vs[q2.indices[i]]);
     }
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(q.light, q2.light, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.r, q2.materialColour.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.g, q2.materialColour.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.b, q2.materialColour.b, 1e-9);
 }
 
 void GeomTestCase::testQuadSubdivision()
@@ -328,14 +338,19 @@ void GeomTestCase::testQuadSubdivision()
     vs.push_back(Vertex(1.0, 5.0, 5.0));
     vs.push_back(Vertex(1.0, 1.0, 5.0));
 
-    Quad q(0, 1, 2, 3, 0.7);
+    Quad q(0, 1, 2, 3, TEST_COLOUR);
 
     subdivide(q, vs, qs, 10, 20);
     CPPUNIT_ASSERT_EQUAL(10ul * 20ul, qs.size());
 
     double subdivArea = 0.0;
     for (unsigned long i = 0; i < qs.size(); ++i) {
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(q.light, qs[i].light, 1e-9);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.r,
+                                     qs[i].materialColour.r, 1e-9);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.g,
+                                     qs[i].materialColour.g, 1e-9);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.b,
+                                     qs[i].materialColour.b, 1e-9);
         subdivArea += paraArea(qs[i], vs);
     }
     CPPUNIT_ASSERT_DOUBLES_EQUAL(paraArea(q, vs), subdivArea, 1e-9);
@@ -349,7 +364,7 @@ void GeomTestCase::testFlip()
     vs.push_back(Vertex(1.0, 1.0, 0.0));
     vs.push_back(Vertex(2.0, 2.0, 0.0));
     vs.push_back(Vertex(2.0, 1.0, 0.0));
-    qs.push_back(Quad(0, 1, 2, 3, 0.5));
+    qs.push_back(Quad(0, 1, 2, 3, TEST_COLOUR));
 
     std::vector<Quad> qs2(qs);
 
@@ -380,7 +395,7 @@ void GeomTestCase::testRotation()
         Vertex(1.0, 1.0, 0.0)
     };
     std::vector<Quad> qs = {
-        Quad(0, 1, 2, 3, 1.0)
+        Quad(0, 1, 2, 3, TEST_COLOUR)
     };
 
     rotate(Vertex(1.0, 1.0, 0.0), M_PI / 2.0, qs, vs);
@@ -402,7 +417,7 @@ void GeomTestCase::testTranslation()
         Vertex(1.0, 1.0, 0.0)
     };
     std::vector<Quad> qs = {
-        Quad(0, 1, 2, 3, 1.0)
+        Quad(0, 1, 2, 3, TEST_COLOUR)
     };
 
     translate(Vertex(1.0, 1.0, 0.0), qs, vs);

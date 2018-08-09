@@ -37,7 +37,7 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
         Vertex c = paraCentre(*iter, vs);
         // Put a big light in the top centre of the box.
         if (fabs(c.x()) < 0.5 && fabs(c.z()) < 0.5 & c.y() > 0.9) {
-            iter->light = iter->brightness = 2.0;
+            iter->materialColour = iter->screenColour = Colour(2.0, 2.0, 2.0);
             iter->isEmitter = true;
         }
     }
@@ -46,39 +46,39 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 void iterateLighting(std::vector<Quad> &qs, std::vector<double> const &transfers)
 {
     int const n = qs.size();
-    std::vector<double> updatedBrightness(n);
+    std::vector<Colour> updatedColours(n);
 
     // Iterate over targets
     for (int i = 0; i < n; ++i) {
-        double newBrightness = 0;
+        Colour incoming;
         if (qs[i].isEmitter) {
             // Emission is just like having 1.0 light arrive.
-            newBrightness = 1.0;
+            incoming = Colour(1.0, 1.0, 1.0);
         } else {
             // Iterate over sources
             for (int j = 0; j < n; ++j) {
                 if (i == j) {
                     continue;
                 }
-                newBrightness += transfers[i * n + j] * qs[j].brightness;
+                incoming += qs[j].screenColour * transfers[i * n + j];
             }
         }
-        updatedBrightness[i] = (newBrightness * qs[i].light);
+        updatedColours[i] = incoming * qs[i].materialColour;
     }
 
     for (int i = 0; i < n; ++i) {
-        qs[i].brightness = updatedBrightness[i];
+        qs[i].screenColour = updatedColours[i];
     }
 }
 
 // Calculate the total light in the scene, as area-weight sum of
-// brightness.
+// screenColour.
 double calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 {
     double totalLight = 0.0;
     for (std::vector<Quad>::iterator iter = qs.begin(), end = qs.end();
          iter != end; ++iter) {
-        totalLight += iter->brightness * paraArea(*iter, vs);
+        totalLight += iter->screenColour.asGrey() * paraArea(*iter, vs);
     }
     return totalLight;
 }

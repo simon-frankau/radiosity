@@ -115,10 +115,49 @@ Vertex lerp(Vertex const &v1, Vertex const &v2, double i)
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Colour
+
+Colour::Colour(double red, double green, double blue)
+    : r(red), g(green), b(blue)
+{
+}
+
+Colour::Colour(Colour const &c)
+    : r(c.r), g(c.g), b(c.b)
+{
+}
+
+Colour::Colour()
+    : r(0.0), g(0.0), b(0.0)
+{
+}
+
+Colour Colour::operator*(double x) const
+{
+    return Colour(r * x, g * x, b * x);
+}
+
+Colour Colour::operator*(Colour const &c) const
+{
+    return Colour(r * c.r, g * c.g, b * c.b);
+}
+
+Colour &Colour::operator+=(Colour const &c)
+{
+    r += c.r; g += c.g; b += c.b;
+    return *this;
+}
+
+double Colour::asGrey() const
+{
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+////////////////////////////////////////////////////////////////////////
 // Quad
 
-Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4, double l)
-    : indices { v1, v2, v3, v4 }, isEmitter(false), light(l), brightness(0)
+Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4, Colour const &c)
+    : indices { v1, v2, v3, v4 }, isEmitter(false), materialColour(c)
 {
 }
 
@@ -130,7 +169,7 @@ void Quad::render(std::vector<Vertex> const &v) const
     Vertex const &v3 = v[indices[3]];
     Vertex n = cross(v3 - v0, v1 - v0).norm();
     glBegin(GL_QUADS);
-    glColor3d(brightness, brightness, brightness);
+    glColor3d(screenColour.r, screenColour.g, screenColour.b);
     glNormal3dv(n.p);
     glVertex3dv(v0.p);
     glVertex3dv(v1.p);
@@ -212,7 +251,7 @@ void subdivide(Quad const &quad,
             GLint base = offset + v * (uCount + 1) + u;
             qs.push_back(Quad(base, base + 1,
                               base + uCount + 2, base + uCount + 1,
-                              quad.light));
+                              quad.materialColour));
             qs.back().isEmitter = quad.isEmitter;
         }
     }
@@ -374,12 +413,12 @@ void flip(std::vector<Quad> &qs,
 ////////////////////////////////////////////////////////////////////////
 // Basic shapes.
 
-// Brightness of the walls, etc.
-static const double B = 0.9;
+// Colour of the walls, etc.
+static Colour const C = Colour(0.9, 0.9, 0.9);
 
 std::vector<Quad> const cubeFaces = {
-    Quad(1, 0, 2, 3, B), Quad(3, 2, 6, 7, B), Quad(7, 6, 4, 5, B),
-    Quad(5, 4, 0, 1, B), Quad(4, 6, 2, 0, B), Quad(7, 5, 1, 3, B)
+    Quad(1, 0, 2, 3, C), Quad(3, 2, 6, 7, C), Quad(7, 6, 4, 5, C),
+    Quad(5, 4, 0, 1, C), Quad(4, 6, 2, 0, C), Quad(7, 5, 1, 3, C)
 };
 
 std::vector<Vertex> const cubeVertices = {
