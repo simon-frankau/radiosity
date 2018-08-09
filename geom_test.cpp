@@ -35,6 +35,14 @@ private:
     CPPUNIT_TEST(testVertexOrthog);
     CPPUNIT_TEST(testVertexCross);
     CPPUNIT_TEST(testVertexLerp);
+    // Colour cases
+    CPPUNIT_TEST(testColourConstructExplicit);
+    CPPUNIT_TEST(testColourConstructCopy);
+    CPPUNIT_TEST(testColourConstructDefault);
+    CPPUNIT_TEST(testColourMultiplyScalar);
+    CPPUNIT_TEST(testColourMultiplyColour);
+    CPPUNIT_TEST(testColourAdd);
+    CPPUNIT_TEST(testColourAsGrey);
     // Quad cases
     CPPUNIT_TEST(testQuadConstruct);
     CPPUNIT_TEST(testParaCentre);
@@ -66,6 +74,14 @@ private:
     void testVertexOrthog();
     void testVertexCross();
     void testVertexLerp();
+    // Colour cases
+    void testColourConstructExplicit();
+    void testColourConstructCopy();
+    void testColourConstructDefault();
+    void testColourMultiplyScalar();
+    void testColourMultiplyColour();
+    void testColourAdd();
+    void testColourAsGrey();
     // Quad cases
     void testQuadConstruct();
     void testParaCentre();
@@ -247,6 +263,65 @@ void GeomTestCase::testVertexLerp()
     assertVectorsEqual(v000, lerp(v000, v100, 0.00));
     assertVectorsEqual(v100, lerp(v000, v100, 1.00));
     assertVectorsEqual(v025, lerp(v000, v100, 0.25));
+}
+
+////////////////////////////////////////////////////////////////////////
+// Colour cases
+
+void GeomTestCase::testColourConstructExplicit()
+{
+    Colour c(0.1, 0.2, 0.3);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.1, c.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, c.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.3, c.b, 1e-9);
+}
+
+void GeomTestCase::testColourConstructCopy()
+{
+    Colour c1(0.1, 0.2, 0.3);
+    Colour c2(c1);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(c1.r, c2.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(c1.g, c2.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(c1.b, c2.b, 1e-9);
+}
+
+void GeomTestCase::testColourConstructDefault()
+{
+    Colour c;
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, c.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, c.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, c.b, 1e-9);
+}
+
+void GeomTestCase::testColourMultiplyScalar()
+{
+    Colour c(TEST_COLOUR * 0.3);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.r * 0.3, c.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.g * 0.3, c.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.b * 0.3, c.b, 1e-9);
+}
+
+void GeomTestCase::testColourMultiplyColour()
+{
+    Colour c(TEST_COLOUR * TEST_COLOUR);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.r * TEST_COLOUR.r, c.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.g * TEST_COLOUR.g, c.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(TEST_COLOUR.b * TEST_COLOUR.b, c.b, 1e-9);
+}
+
+void GeomTestCase::testColourAdd()
+{
+    Colour c(TEST_COLOUR);
+    c += TEST_COLOUR;
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0 * TEST_COLOUR.r, c.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0 * TEST_COLOUR.g, c.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0 * TEST_COLOUR.b, c.b, 1e-9);
+}
+
+void GeomTestCase::testColourAsGrey()
+{
+    Colour c(1.0, 1.0, 1.0);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, c.asGrey(), 1e-9);
 }
 
 ////////////////////////////////////////////////////////////////////////
