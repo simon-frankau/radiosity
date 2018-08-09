@@ -217,19 +217,19 @@ void subdivide(Quad const &quad,
     }
 }
 
-class VertexScaler
+// Applies a transform to the requested vertices, with a cache.
+class VertexTransformer
 {
 private:
-    double m_scale;
     std::vector<Vertex> &m_vertices;
 
     // Cache of vertices scaled already.
     std::map<int, int> m_scaledVertices;
 
+    virtual Vertex transform(Vertex const &v) = 0;
 public:
-    VertexScaler(double scale,
-                 std::vector<Vertex> &vertices)
-        : m_scale(scale), m_vertices(vertices)
+    VertexTransformer(std::vector<Vertex> &vertices)
+        : m_vertices(vertices)
     {
     }
 
@@ -243,8 +243,26 @@ public:
         // Else add and return.
         int j = m_vertices.size();
         m_scaledVertices[i] = j;
-        m_vertices.push_back(m_vertices[i].scale(m_scale));
+        m_vertices.push_back(transform(m_vertices[i]));
         return j;
+    }
+};
+
+class VertexScaler : public VertexTransformer
+{
+private:
+    double m_scale;
+
+    virtual Vertex transform(Vertex const &v)
+    {
+        return v.scale(m_scale);
+    }
+
+public:
+    VertexScaler(double scale,
+                 std::vector<Vertex> &vertices)
+        : m_scale(scale), VertexTransformer(vertices)
+    {
     }
 };
 
