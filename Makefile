@@ -1,13 +1,13 @@
 C_FLAGS=-Wno-deprecated-declarations
 
-$(shell mkdir -p bin/ obj/ >/dev/null)
+$(shell mkdir -p bin/ obj/ png/ >/dev/null)
 
 .PHONY: all clean test
 
 all: bin/cube bin/test
 
 clean:
-	rm -rf bin/ obj/
+	rm -rf bin/ obj/ png/
 
 test: bin/test
 	bin/test
@@ -19,7 +19,7 @@ obj/%.o: %.cpp
 	g++ -MM ${C_FLAGS} $< | sed "s|^|obj/|" > $(@:.o=.d)
 
 bin/cube: obj/cube.o obj/geom.o obj/glut_wrap.o obj/geom.o obj/transfers.o obj/weighting.o obj/rendering.o
-	g++ -framework GLUT -framework OpenGL $^ -o $@
+	g++ -l png -framework GLUT -framework OpenGL $^ -o $@
 
 bin/test: obj/weighting.o obj/weighting_test.o obj/geom.o obj/geom_test.o obj/test.o obj/transfers.o obj/transfers_test.o obj/glut_wrap.o
 	g++ -l cppunit -framework GLUT -framework OpenGL $^ -o $@

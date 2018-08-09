@@ -13,12 +13,58 @@
 
 #include <vector>
 
+#include <png.h>
+
 #include "geom.h"
+
+static const int WIDTH = 512;
+static const int HEIGHT = 512;
 
 static std::vector<Quad> faces;
 static std::vector<Vertex> vertices;
 
-void drawBox(void)
+static void screenshotPNG(const char *filename)
+{
+    const size_t format_nchannels = 4;
+    size_t nvals = format_nchannels * WIDTH * HEIGHT;
+
+    // Assuming a GLubyte is a png_byte...
+    std::vector<png_byte> pixels(nvals);
+    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
+
+    std::vector<png_byte *> png_rows(HEIGHT);
+    for (size_t i = 0; i < HEIGHT; i++) {
+        png_rows[HEIGHT - i - 1] = &pixels[i * WIDTH * format_nchannels];
+    }
+
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+                                              NULL, NULL, NULL);
+    if (png == NULL) {
+        throw std::runtime_error("png_create_write_struct failed");
+    }
+
+    png_infop info = png_create_info_struct(png);
+    if (info == NULL) {
+        throw std::runtime_error("png_create_info_struct failed");
+    }
+
+    if (setjmp(png_jmpbuf(png))) {
+        throw std::runtime_error("Something failed in libpng");
+    }
+
+    FILE *f = fopen(filename, "wb");
+    png_init_io(png, f);
+    png_set_IHDR(png, info, WIDTH, HEIGHT, 8, PNG_COLOR_TYPE_RGBA,
+                 PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+                 PNG_FILTER_TYPE_DEFAULT);
+    png_write_info(png, info);
+    png_write_image(png, &png_rows[0]);
+    png_write_end(png, NULL);
+    png_destroy_write_struct(&png, &info);
+    fclose(f);
+}
+
+static void drawScene(void)
 {
     for (std::vector<Quad>::const_iterator iter = faces.begin(),
              end = faces.end(); iter != end; ++iter) {
@@ -26,14 +72,20 @@ void drawBox(void)
     }
 }
 
-void display(void)
+static void display(void)
 {
+    static bool first = true;
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    drawBox();
+    drawScene();
+    if (first) {
+        screenshotPNG("png/scene.png");
+        first = false;
+    }
     glutSwapBuffers();
 }
 
-void initGL(void)
+static void initGL(void)
 {
     // Flat shading.
     glEnable(GL_COLOR_MATERIAL);
@@ -61,7 +113,7 @@ void render(std::vector<Quad> f, std::vector<Vertex> v)
     vertices = v;
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-    glutInitWindowSize(512, 512);
+    glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Radiosity demo");
     glutDisplayFunc(display);
     initGL();
