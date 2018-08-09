@@ -2,7 +2,7 @@
 //
 // test.cpp: Test harness for all the unit tests.
 //
-// Copyright (c) Simon Frankaus 2018
+// Copyright (c) Simon Frankau 2018
 //
 
 #ifdef __APPLE__

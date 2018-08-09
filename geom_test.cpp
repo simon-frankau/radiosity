@@ -18,72 +18,75 @@ class GeomTestCase : public CppUnit::TestCase
 private:
     CPPUNIT_TEST_SUITE(GeomTestCase);
     // Vertex cases
-    CPPUNIT_TEST(copyVertex);
-    CPPUNIT_TEST(getVertexComponents);
-    CPPUNIT_TEST(getVertexLength);
-    CPPUNIT_TEST(getVertexNorm);
-    CPPUNIT_TEST(getVertexPerp);
-    CPPUNIT_TEST(vertexScaling);
-    CPPUNIT_TEST(vertexAddition);
-    CPPUNIT_TEST(vertexSubtraction);
-    CPPUNIT_TEST(printVertex);
-    CPPUNIT_TEST(selfDotVertex);
-    CPPUNIT_TEST(orthDotVertex);
-    CPPUNIT_TEST(otherDotVertex);
-    CPPUNIT_TEST(orthogVertex);
-    CPPUNIT_TEST(crossVertex);
-    CPPUNIT_TEST(lerpVertex);
+    CPPUNIT_TEST(testVertexCopy);
+    CPPUNIT_TEST(testVertexComponents);
+    CPPUNIT_TEST(testVertexLength);
+    CPPUNIT_TEST(testVertexNorm);
+    CPPUNIT_TEST(testVertexPerp);
+    CPPUNIT_TEST(testVertexScaling);
+    CPPUNIT_TEST(testVertexAddition);
+    CPPUNIT_TEST(testVertexSubtraction);
+    CPPUNIT_TEST(testVertexPrint);
+    CPPUNIT_TEST(testVertexSelfDot);
+    CPPUNIT_TEST(testVertexOrthogonalDot);
+    CPPUNIT_TEST(testVertexOtherDot);
+    CPPUNIT_TEST(testVertexOrthog);
+    CPPUNIT_TEST(testVertexCross);
+    CPPUNIT_TEST(testVertexLerp);
     // Quad cases
-    CPPUNIT_TEST(constructQuad);
+    CPPUNIT_TEST(testQuadConstruct);
     CPPUNIT_TEST(testParaCentre);
     CPPUNIT_TEST(testParaCross);
     CPPUNIT_TEST(testParaArea);
-    CPPUNIT_TEST(trivialSubdivideQuad);
-    CPPUNIT_TEST(subdivideQuad);
-    CPPUNIT_TEST(scaleCube);
+    CPPUNIT_TEST(testQuadTrivialSubdivision);
+    CPPUNIT_TEST(testQuadSubdivision);
+    CPPUNIT_TEST(testScale);
     CPPUNIT_TEST(testRotation);
     CPPUNIT_TEST(testTranslation);
-    CPPUNIT_TEST(flipQuad);
+    CPPUNIT_TEST(testFlip);
     // Cube case
-    CPPUNIT_TEST(cubeProperties);
+    CPPUNIT_TEST(testCubeProperties);
     CPPUNIT_TEST_SUITE_END();
 
     // Vertex cases
-    void copyVertex();
-    void getVertexComponents();
-    void getVertexLength();
-    void getVertexNorm();
-    void getVertexPerp();
-    void vertexScaling();
-    void vertexAddition();
-    void vertexSubtraction();
-    void printVertex();
-    void selfDotVertex();
-    void orthDotVertex();
-    void otherDotVertex();
-    void orthogVertex();
-    void crossVertex();
-    void lerpVertex();
+    void testVertexCopy();
+    void testVertexComponents();
+    void testVertexLength();
+    void testVertexNorm();
+    void testVertexPerp();
+    void testVertexScaling();
+    void testVertexAddition();
+    void testVertexSubtraction();
+    void testVertexPrint();
+    void testVertexSelfDot();
+    void testVertexOrthogonalDot();
+    void testVertexOtherDot();
+    void testVertexOrthog();
+    void testVertexCross();
+    void testVertexLerp();
     // Quad cases
-    void constructQuad();
+    void testQuadConstruct();
     void testParaCentre();
     void testParaCross();
     void testParaArea();
-    void trivialSubdivideQuad();
-    void subdivideQuad();
-    void scaleCube();
+    void testQuadTrivialSubdivision();
+    void testQuadSubdivision();
+    void testScale();
     void testRotation();
     void testTranslation();
-    void flipQuad();
+    void testFlip();
     // Cube case
-    void cubeProperties();
+    void testCubeProperties();
     // Helpers
-    void vecEquals(Vertex const &v1, Vertex const &v2);
+    void assertVectorsEqual(Vertex const &v1, Vertex const &v2);
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(GeomTestCase, "GeomTestCase");
 
-void GeomTestCase::copyVertex()
+////////////////////////////////////////////////////////////////////////
+// Vertex test cases
+
+void GeomTestCase::testVertexCopy()
 {
     Vertex v1(-1.0, 2.0, 3.0);
     Vertex v2(v1);
@@ -93,7 +96,7 @@ void GeomTestCase::copyVertex()
     CPPUNIT_ASSERT(v1.z() == v2.z());
 }
 
-void GeomTestCase::getVertexComponents()
+void GeomTestCase::testVertexComponents()
 {
     Vertex v(-1.0, 2.0, 3.0);
 
@@ -106,13 +109,13 @@ void GeomTestCase::getVertexComponents()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(+3.0, v.p[2], 1e-9);
 }
 
-void GeomTestCase::getVertexLength()
+void GeomTestCase::testVertexLength()
 {
     Vertex v(-1.0, 2.0, 3.0);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(sqrt(14.0), v.len(), 1e-9);
 }
 
-void GeomTestCase::getVertexNorm()
+void GeomTestCase::testVertexNorm()
 {
     Vertex v1(-1.0, 2.0, 3.0);
     Vertex v2(v1.norm());
@@ -125,7 +128,7 @@ void GeomTestCase::getVertexNorm()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(rx, rz, 1e-9);
 }
 
-void GeomTestCase::getVertexPerp()
+void GeomTestCase::testVertexPerp()
 {
     Vertex v1(-1.0, 2.0, 3.0);
     Vertex v2(v1.perp());
@@ -133,16 +136,16 @@ void GeomTestCase::getVertexPerp()
     CPPUNIT_ASSERT(v2.len() > 1.0e-3);
 }
 
-void GeomTestCase::vertexScaling()
+void GeomTestCase::testVertexScaling()
 {
     Vertex v1(1.0, -2.0, 3.0);
     Vertex v2(v1.scale(-0.5));
     Vertex v3(-0.5, 1.0, -1.5);
 
-    vecEquals(v2, v3);
+    assertVectorsEqual(v2, v3);
 }
 
-void GeomTestCase::vertexAddition()
+void GeomTestCase::testVertexAddition()
 {
     Vertex v1(-1.0, 2.0,  3.0);
     Vertex v2(-4.0, 5.0, -6.0);
@@ -153,7 +156,7 @@ void GeomTestCase::vertexAddition()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(-3.0, v3.z(), 1e-9);
 }
 
-void GeomTestCase::vertexSubtraction()
+void GeomTestCase::testVertexSubtraction()
 {
     Vertex v1(-1.0, 2.0,  3.0);
     Vertex v2(-4.0, 5.0, -6.0);
@@ -164,7 +167,7 @@ void GeomTestCase::vertexSubtraction()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(+9.0, v3.z(), 1e-9);
 }
 
-void GeomTestCase::printVertex()
+void GeomTestCase::testVertexPrint()
 {
     Vertex v(-1.0, 2.0, 3.0);
     std::ostringstream oss;
@@ -172,7 +175,7 @@ void GeomTestCase::printVertex()
     CPPUNIT_ASSERT_EQUAL(std::string("(-1, 2, 3)"), oss.str());
 }
 
-void GeomTestCase::selfDotVertex()
+void GeomTestCase::testVertexSelfDot()
 {
     Vertex vs[] = {
         Vertex(-1.0, 2.0,  3.0),
@@ -185,31 +188,31 @@ void GeomTestCase::selfDotVertex()
     }
 }
 
-void GeomTestCase::orthDotVertex()
+void GeomTestCase::testVertexOrthogonalDot()
 {
     Vertex v1(-1.0, 1.0, 1.0);
     Vertex v2( 1.0, 1.0, 0.0);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, dot(v1, v2), 1e-9);
 }
 
-void GeomTestCase::otherDotVertex()
+void GeomTestCase::testVertexOtherDot()
 {
     Vertex v1(-1.0, 1.0, 1.0);
     Vertex v2(-1.0, 0.0, 0.0);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, dot(v1, v2), 1e-9);
 }
 
-void GeomTestCase::orthogVertex()
+void GeomTestCase::testVertexOrthog()
 {
     Vertex v1( 5.0, -3.0, 42.0);
     Vertex v2(-5.0, -3.0,  7.0);
     Vertex v3(orthog(v1, v2));
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, dot(v2, v3), 1e-9);
-    vecEquals(cross(v1, v2), cross(v3, v2));
+    assertVectorsEqual(cross(v1, v2), cross(v3, v2));
 }
 
-void GeomTestCase::crossVertex()
+void GeomTestCase::testVertexCross()
 {
     Vertex vs[] = {
         Vertex(2.0,  0.0, 0.0),
@@ -231,18 +234,21 @@ void GeomTestCase::crossVertex()
     }
 }
 
-void GeomTestCase::lerpVertex()
+void GeomTestCase::testVertexLerp()
 {
     Vertex v000(1.0, 1.0,  1.0);
     Vertex v100(5.0, 9.0, 13.0);
     Vertex v025(2.0, 3.0,  4.0);
 
-    vecEquals(v000, lerp(v000, v100, 0.00));
-    vecEquals(v100, lerp(v000, v100, 1.00));
-    vecEquals(v025, lerp(v000, v100, 0.25));
+    assertVectorsEqual(v000, lerp(v000, v100, 0.00));
+    assertVectorsEqual(v100, lerp(v000, v100, 1.00));
+    assertVectorsEqual(v025, lerp(v000, v100, 0.25));
 }
 
-void GeomTestCase::constructQuad()
+////////////////////////////////////////////////////////////////////////
+// Quad test cases.
+
+void GeomTestCase::testQuadConstruct()
 {
     Quad q(1, 2, 3, 4, 0.5);
     CPPUNIT_ASSERT_EQUAL(1, q.indices[0]);
@@ -263,7 +269,7 @@ void GeomTestCase::testParaCentre()
     vs.push_back(Vertex(2.0, 1.0, 0.0));
     Quad q(0, 1, 2, 3, 0.5);
     Vertex vc(1.5, 1.0, 0.0);
-    vecEquals(vc, paraCentre(q, vs));
+    assertVectorsEqual(vc, paraCentre(q, vs));
 }
 
 void GeomTestCase::testParaCross()
@@ -275,7 +281,7 @@ void GeomTestCase::testParaCross()
     vs.push_back(Vertex(2.0, 1.0, 0.0));
     Quad q(0, 1, 2, 3, 0.5);
     Vertex vc(0.0, 0.0, 1.0);
-    vecEquals(vc, paraCross(q, vs));
+    assertVectorsEqual(vc, paraCross(q, vs));
 }
 
 void GeomTestCase::testParaArea()
@@ -289,7 +295,7 @@ void GeomTestCase::testParaArea()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, paraArea(q, vs), 1e-9);
 }
 
-void GeomTestCase::trivialSubdivideQuad()
+void GeomTestCase::testQuadTrivialSubdivision()
 {
     std::vector<Vertex> vs;
     std::vector<Quad> qs;
@@ -305,12 +311,12 @@ void GeomTestCase::trivialSubdivideQuad()
     CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
     Quad &q2 = qs[0];
     for (int i = 0; i < 4; ++i) {
-        vecEquals(vs[q.indices[i]], vs[q2.indices[i]]);
+        assertVectorsEqual(vs[q.indices[i]], vs[q2.indices[i]]);
     }
     CPPUNIT_ASSERT_DOUBLES_EQUAL(q.light, q2.light, 1e-9);
 }
 
-void GeomTestCase::subdivideQuad()
+void GeomTestCase::testQuadSubdivision()
 {
     // I'm sure there are funky things we could do. Let's just check
     // we get the right number of quads and area is preserved.
@@ -335,7 +341,7 @@ void GeomTestCase::subdivideQuad()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(paraArea(q, vs), subdivArea, 1e-9);
 }
 
-void GeomTestCase::flipQuad()
+void GeomTestCase::testFlip()
 {
     std::vector<Vertex> vs;
     std::vector<Quad> qs;
@@ -348,11 +354,11 @@ void GeomTestCase::flipQuad()
     std::vector<Quad> qs2(qs);
 
     flip(qs2, vs);
-    vecEquals(paraCross(qs [0], vs),
+    assertVectorsEqual(paraCross(qs [0], vs),
               paraCross(qs2[0], vs).scale(-1.0));
 }
 
-void GeomTestCase::scaleCube()
+void GeomTestCase::testScale()
 {
     std::vector<Vertex> vertices(cubeVertices);
     std::vector<Quad> faces(cubeFaces);
@@ -381,10 +387,10 @@ void GeomTestCase::testRotation()
     CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
     Quad const &q = qs[0];
     double rt = sqrt(0.5);
-    vecEquals(Vertex( 0.5, 0.5,  rt), vs[q.indices[0]]);
-    vecEquals(Vertex( 0.5, 0.5, -rt), vs[q.indices[1]]);
-    vecEquals(Vertex( -rt, rt,  0.0), vs[q.indices[2]]);
-    vecEquals(Vertex( 1.0, 1.0, 0.0), vs[q.indices[3]]);
+    assertVectorsEqual(Vertex( 0.5, 0.5,  rt), vs[q.indices[0]]);
+    assertVectorsEqual(Vertex( 0.5, 0.5, -rt), vs[q.indices[1]]);
+    assertVectorsEqual(Vertex( -rt, rt,  0.0), vs[q.indices[2]]);
+    assertVectorsEqual(Vertex( 1.0, 1.0, 0.0), vs[q.indices[3]]);
 }
 
 void GeomTestCase::testTranslation()
@@ -402,13 +408,16 @@ void GeomTestCase::testTranslation()
     translate(Vertex(1.0, 1.0, 0.0), qs, vs);
     CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
     Quad const &q = qs[0];
-    vecEquals(Vertex(2.0, 1.0, 0.0), vs[q.indices[0]]);
-    vecEquals(Vertex(1.0, 2.0, 0.0), vs[q.indices[1]]);
-    vecEquals(Vertex(1.0, 1.0, 1.0), vs[q.indices[2]]);
-    vecEquals(Vertex(2.0, 2.0, 0.0), vs[q.indices[3]]);
+    assertVectorsEqual(Vertex(2.0, 1.0, 0.0), vs[q.indices[0]]);
+    assertVectorsEqual(Vertex(1.0, 2.0, 0.0), vs[q.indices[1]]);
+    assertVectorsEqual(Vertex(1.0, 1.0, 1.0), vs[q.indices[2]]);
+    assertVectorsEqual(Vertex(2.0, 2.0, 0.0), vs[q.indices[3]]);
 }
 
-void GeomTestCase::cubeProperties()
+////////////////////////////////////////////////////////////////////////
+// Miscellaneous.
+
+void GeomTestCase::testCubeProperties()
 {
     // Check that all faces of the cube face the same way around the
     // origin and have same area.
@@ -423,7 +432,7 @@ void GeomTestCase::cubeProperties()
     }
 }
 
-void GeomTestCase::vecEquals(Vertex const &v1, Vertex const &v2)
+void GeomTestCase::assertVectorsEqual(Vertex const &v1, Vertex const &v2)
 {
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, (v1 - v2).len(), 1e-9);
 }

@@ -3,7 +3,7 @@
 // weighting.h: Weightings to apply to a rendered image to get
 // how much light comes from which point.
 //
-// Copyright (c) Simon Frankaus 2018
+// Copyright (c) Simon Frankau 2018
 //
 
 #ifndef RADIOSITY_WEIGHTING_H

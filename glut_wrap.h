@@ -2,7 +2,7 @@
 //
 // glut_wrap.h: Wrap up GLUT-calling code to increase reuse.
 //
-// Copyright (c) Simon Frankaus 2018
+// Copyright (c) Simon Frankau 2018
 //
 
 #ifndef RADIOSITY_GLUT_WRAP_H

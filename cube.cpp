@@ -19,7 +19,13 @@
 #include "glut_wrap.h"
 #include "transfers.h"
 
+// Relative change in total light in the scene by the point we stop
+// iterating.
 const double CONVERGENCE_TARGET = 0.001;
+
+// Break up each base quad into subdivision^2 subquads for radiosity
+// calculations.
+GLint const SUBDIVISION = 32;
 
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations
@@ -39,7 +45,7 @@ void initLighting(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
 
 void iterateLighting(std::vector<Quad> &qs, std::vector<double> const &transfers)
 {
-    int n = qs.size();
+    int const n = qs.size();
     std::vector<double> updatedBrightness(n);
 
     // Iterate over targets
@@ -77,7 +83,6 @@ double calcLight(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     return totalLight;
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 // And the main rendering bit...
 
@@ -91,18 +96,20 @@ static std::vector<double> transfers;
 void initGeometry(void)
 {
     vertices = cubeVertices;
-    std::vector<Quad> tmpFaces(cubeFaces); // Big box
-    std::vector<Quad> tmp2Faces(cubeFaces); // Enclosed cube
-    scale(0.4, tmp2Faces, vertices);
-    flip(tmp2Faces, vertices);
-    rotate(Vertex(1.0, 0.0, 0.0), M_PI / 3.0, tmp2Faces, vertices);
-    rotate(Vertex(0.0, 0.0, 1.0), M_PI / 6.0, tmp2Faces, vertices);
-    translate(Vertex(0.0, -0.25, 0.0), tmp2Faces, vertices);
-    tmpFaces.insert(tmpFaces.end(), tmp2Faces.begin(), tmp2Faces.end());
-    for (std::vector<Quad>::const_iterator iter = tmpFaces.begin(),
-             end = tmpFaces.end(); iter != end; ++iter) {
+    // Start with the inner cube: Take the basic scene cube, scale it
+    // down, rotate and move it...
+    std::vector<Quad> sceneFaces(cubeFaces); // Enclosed cube
+    scale(0.4, sceneFaces, vertices);
+    flip(sceneFaces, vertices);
+    rotate(Vertex(1.0, 0.0, 0.0), M_PI / 3.0, sceneFaces, vertices);
+    rotate(Vertex(0.0, 0.0, 1.0), M_PI / 6.0, sceneFaces, vertices);
+    translate(Vertex(0.0, -0.25, 0.0), sceneFaces, vertices);
+    // Then add in the scene-holding cube.
+    sceneFaces.insert(sceneFaces.end(), cubeFaces.begin(), cubeFaces.end());
+    // Finally, copy the subdivided version into 'faces'.
+    for (std::vector<Quad>::const_iterator iter = sceneFaces.begin(),
+             end = sceneFaces.end(); iter != end; ++iter) {
         subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
-        // subdivide(*iter, vertices, faces, 4, 4);
     }
 }
 

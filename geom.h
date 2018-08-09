@@ -2,7 +2,7 @@
 //
 // geom.h: Points, primitives, etc.
 //
-// (C) Copyright 2018 Simon Frankau
+// Copyright (C) 2018 Simon Frankau
 //
 
 #ifndef RADIOSITY_GEOM_H
@@ -16,13 +16,6 @@
 
 #include <iostream>
 #include <vector>
-
-////////////////////////////////////////////////////////////////////////
-// Constants etc.
-
-// Break up each base quad into subdivision^2 subquads for radiosity
-// calculations.
-GLint const SUBDIVISION = 32;
 
 ////////////////////////////////////////////////////////////////////////
 // Yet another 3d point class

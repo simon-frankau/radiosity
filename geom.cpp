@@ -2,7 +2,7 @@
 //
 // geom.cpp: Points, primitives, etc.
 //
-// (C) Copyright 2018 Simon Frankau
+// Copyright (C) 2018 Simon Frankau
 //
 
 #ifdef __APPLE__
@@ -147,7 +147,8 @@ void Quad::renderIndex(int index, std::vector<Vertex> const &v) const
     Vertex const &v3 = v[indices[3]];
     Vertex n = cross(v3 - v0, v1 - v0).norm();
     glBegin(GL_QUADS);
-    // We're not using that many polys, so skip the low bits.
+    // We're not using that many polys, so skip the low bits. This
+    // means we can see what's going on better if we do a test render.
     glColor3ub((index << 2) & 0xFC, (index >> 4) & 0xFC, (index >> 10) & 0xFC);
     glNormal3dv(n.p);
     glVertex3dv(v0.p);
@@ -226,7 +227,8 @@ private:
     // Cache of vertices scaled already.
     std::map<int, int> m_scaledVertices;
 
-    virtual Vertex transform(Vertex const &v) = 0;
+    virtual Vertex transform(Vertex const &v) const = 0;
+
 public:
     VertexTransformer(std::vector<Vertex> &vertices)
         : m_vertices(vertices)
@@ -246,6 +248,16 @@ public:
         m_vertices.push_back(transform(m_vertices[i]));
         return j;
     }
+
+    void transformAll(std::vector<Quad> &qs)
+    {
+        for (int i = 0, n = qs.size(); i < n; ++i) {
+            Quad &q = qs[i];
+            for (int j = 0; j < 4; ++j) {
+                q.indices[j] = (*this)(q.indices[j]);
+            }
+        }
+    }
 };
 
 class VertexTranslater : public VertexTransformer
@@ -253,7 +265,7 @@ class VertexTranslater : public VertexTransformer
 private:
     Vertex const &m_offset;
 
-    virtual Vertex transform(Vertex const &v)
+    virtual Vertex transform(Vertex const &v) const
     {
         return v + m_offset;
     }
@@ -271,14 +283,7 @@ void translate(Vertex const &t,
           std::vector<Quad> &qs,
           std::vector<Vertex> &vs)
 {
-    VertexTranslater m(t, vs);
-
-    for (int i = 0, n = qs.size(); i < n; ++i) {
-        Quad &q = qs[i];
-        for (int j = 0; j < 4; ++j) {
-            q.indices[j] = m(q.indices[j]);
-        }
-    }
+    VertexTranslater(t, vs).transformAll(qs);;
 }
 
 class VertexScaler : public VertexTransformer
@@ -286,7 +291,7 @@ class VertexScaler : public VertexTransformer
 private:
     double m_scale;
 
-    virtual Vertex transform(Vertex const &v)
+    virtual Vertex transform(Vertex const &v) const
     {
         return v.scale(m_scale);
     }
@@ -304,23 +309,7 @@ void scale(double s,
            std::vector<Quad> &qs,
            std::vector<Vertex> &vs)
 {
-    VertexScaler m(s, vs);
-
-    for (int i = 0, n = qs.size(); i < n; ++i) {
-        Quad &q = qs[i];
-        for (int j = 0; j < 4; ++j) {
-            q.indices[j] = m(q.indices[j]);
-        }
-    }
-}
-
-void flip(std::vector<Quad> &qs,
-          std::vector<Vertex> &vs)
-{
-    for (int i = 0, n = qs.size(); i < n; ++i) {
-        Quad &q = qs[i];
-        std::swap(q.indices[1], q.indices[3]);
-    }
+    VertexScaler(s, vs).transformAll(qs);
 }
 
 class VertexRotater : public VertexTransformer
@@ -333,7 +322,7 @@ private:
     Vertex m_plane1;
     Vertex m_plane2;
 
-    virtual Vertex transform(Vertex const &v)
+    virtual Vertex transform(Vertex const &v) const
     {
         // Decompase v to our rotation's basis.
         double x = dot(v, m_plane1);
@@ -369,13 +358,16 @@ void rotate(Vertex const &axis,
             std::vector<Quad> &qs,
             std::vector<Vertex> &vs)
 {
-    VertexRotater m(axis, angle, vs);
+    VertexRotater(axis, angle, vs).transformAll(qs);
+}
 
+// Flip the facing direction of the quads.
+void flip(std::vector<Quad> &qs,
+          std::vector<Vertex> &vs)
+{
     for (int i = 0, n = qs.size(); i < n; ++i) {
         Quad &q = qs[i];
-        for (int j = 0; j < 4; ++j) {
-            q.indices[j] = m(q.indices[j]);
-        }
+        std::swap(q.indices[1], q.indices[3]);
     }
 }
 
@@ -383,7 +375,7 @@ void rotate(Vertex const &axis,
 // Basic shapes.
 
 // Brightness of the walls, etc.
-static const double B = 0.7;
+static const double B = 0.9;
 
 std::vector<Quad> const cubeFaces = {
     Quad(1, 0, 2, 3, B), Quad(3, 2, 6, 7, B), Quad(7, 6, 4, 5, B),
