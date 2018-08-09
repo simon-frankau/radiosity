@@ -42,6 +42,22 @@ Vertex Vertex::norm() const
     return Vertex(x() / l, y() / l, z() / l);
 }
 
+// Get an arbitrary perpendicular vector.
+Vertex Vertex::perp() const
+{
+    // Choose the axis-aligned vector most orthogonal, and then
+    // properly orthogonalise it.
+    double ax = fabs(x()), ay = fabs(y()), az = fabs(z());
+    if (ax < ay && ax < az) {
+        return orthog(Vertex(1.0, 0.0, 0.0), *this);
+    }
+    if (ay < az) {
+        return orthog(Vertex(0.0, 1.0, 0.0), *this);
+    } else {
+        return orthog(Vertex(0.0, 0.0, 1.0), *this);
+    }
+}
+
 Vertex Vertex::scale(double s) const
 {
     return Vertex(x() * s, y() * s, z() * s);
@@ -80,6 +96,13 @@ double dot(Vertex const &v1, Vertex const &v2)
     return v1.x() * v2.x()
          + v1.y() * v2.y()
          + v1.z() * v2.z();
+}
+
+// Orthogonalise v1, taking away the v2 component.
+Vertex orthog(Vertex const &v1, Vertex const &v2)
+{
+    double c = dot(v1, v2) / dot(v2, v2);
+    return v1 - v2.scale(c);
 }
 
 // Linear interpolation. 0 returns v1, 1 returns v2.

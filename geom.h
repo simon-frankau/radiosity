@@ -35,6 +35,7 @@ public:
 
     double len() const;
     Vertex norm() const;
+    Vertex perp() const;
     Vertex scale(double s) const;
 
     Vertex operator+(Vertex const &rhs) const;
@@ -54,6 +55,9 @@ Vertex cross(Vertex const &v1, Vertex const &v2);
 
 // Dot product.
 double dot(Vertex const &v1, Vertex const &v2);
+
+// Orthogonalise v1, taking away the v2 component.
+Vertex  orthog(Vertex const &v1, Vertex const &v2);
 
 // Linear interpolation. 0 returns v1, 1 returns v2.
 Vertex lerp(Vertex const &v1, Vertex const &v2, double i);

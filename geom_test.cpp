@@ -22,6 +22,7 @@ private:
     CPPUNIT_TEST(getVertexComponents);
     CPPUNIT_TEST(getVertexLength);
     CPPUNIT_TEST(getVertexNorm);
+    CPPUNIT_TEST(getVertexPerp);
     CPPUNIT_TEST(vertexScaling);
     CPPUNIT_TEST(vertexAddition);
     CPPUNIT_TEST(vertexSubtraction);
@@ -29,6 +30,7 @@ private:
     CPPUNIT_TEST(selfDotVertex);
     CPPUNIT_TEST(orthDotVertex);
     CPPUNIT_TEST(otherDotVertex);
+    CPPUNIT_TEST(orthogVertex);
     CPPUNIT_TEST(crossVertex);
     CPPUNIT_TEST(lerpVertex);
     // Quad cases
@@ -49,6 +51,7 @@ private:
     void getVertexComponents();
     void getVertexLength();
     void getVertexNorm();
+    void getVertexPerp();
     void vertexScaling();
     void vertexAddition();
     void vertexSubtraction();
@@ -56,6 +59,7 @@ private:
     void selfDotVertex();
     void orthDotVertex();
     void otherDotVertex();
+    void orthogVertex();
     void crossVertex();
     void lerpVertex();
     // Quad cases
@@ -115,6 +119,14 @@ void GeomTestCase::getVertexNorm()
     double rz = v1.x() / v2.x();
     CPPUNIT_ASSERT_DOUBLES_EQUAL(rx, ry, 1e-9);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(rx, rz, 1e-9);
+}
+
+void GeomTestCase::getVertexPerp()
+{
+    Vertex v1(-1.0, 2.0, 3.0);
+    Vertex v2(v1.perp());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, dot(v1, v2), 1e-9);
+    CPPUNIT_ASSERT(v2.len() > 1.0e-3);
 }
 
 void GeomTestCase::vertexScaling()
@@ -181,6 +193,16 @@ void GeomTestCase::otherDotVertex()
     Vertex v1(-1.0, 1.0, 1.0);
     Vertex v2(-1.0, 0.0, 0.0);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, dot(v1, v2), 1e-9);
+}
+
+void GeomTestCase::orthogVertex()
+{
+    Vertex v1( 5.0, -3.0, 42.0);
+    Vertex v2(-5.0, -3.0,  7.0);
+    Vertex v3(orthog(v1, v2));
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, dot(v2, v3), 1e-9);
+    vecEquals(cross(v1, v2), cross(v3, v2));
 }
 
 void GeomTestCase::crossVertex()
