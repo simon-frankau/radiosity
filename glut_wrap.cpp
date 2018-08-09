@@ -44,7 +44,7 @@ int gwTransferSetup(int size)
     glLoadIdentity();
     gluPerspective(90.0,  // Field of view in degrees
                    1.0,   // Aspect ratio
-                   0.1,   // Z near
+                   0.001, // Z near
                    10.0); // Z far
 
     return win;

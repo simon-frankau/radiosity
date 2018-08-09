@@ -42,6 +42,7 @@ private:
     CPPUNIT_TEST(subdivideQuad);
     CPPUNIT_TEST(scaleCube);
     CPPUNIT_TEST(testRotation);
+    CPPUNIT_TEST(testTranslation);
     CPPUNIT_TEST(flipQuad);
     // Cube case
     CPPUNIT_TEST(cubeProperties);
@@ -72,6 +73,7 @@ private:
     void subdivideQuad();
     void scaleCube();
     void testRotation();
+    void testTranslation();
     void flipQuad();
     // Cube case
     void cubeProperties();
@@ -383,6 +385,27 @@ void GeomTestCase::testRotation()
     vecEquals(Vertex( 0.5, 0.5, -rt), vs[q.indices[1]]);
     vecEquals(Vertex( -rt, rt,  0.0), vs[q.indices[2]]);
     vecEquals(Vertex( 1.0, 1.0, 0.0), vs[q.indices[3]]);
+}
+
+void GeomTestCase::testTranslation()
+{
+    std::vector<Vertex> vs = {
+        Vertex(1.0, 0.0, 0.0),
+        Vertex(0.0, 1.0, 0.0),
+        Vertex(0.0, 0.0, 1.0),
+        Vertex(1.0, 1.0, 0.0)
+    };
+    std::vector<Quad> qs = {
+        Quad(0, 1, 2, 3, 1.0)
+    };
+
+    translate(Vertex(1.0, 1.0, 0.0), qs, vs);
+    CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
+    Quad const &q = qs[0];
+    vecEquals(Vertex(2.0, 1.0, 0.0), vs[q.indices[0]]);
+    vecEquals(Vertex(1.0, 2.0, 0.0), vs[q.indices[1]]);
+    vecEquals(Vertex(1.0, 1.0, 1.0), vs[q.indices[2]]);
+    vecEquals(Vertex(2.0, 2.0, 0.0), vs[q.indices[3]]);
 }
 
 void GeomTestCase::cubeProperties()

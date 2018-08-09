@@ -97,11 +97,12 @@ void initGeometry(void)
     flip(tmp2Faces, vertices);
     rotate(Vertex(1.0, 0.0, 0.0), M_PI / 3.0, tmp2Faces, vertices);
     rotate(Vertex(0.0, 0.0, 1.0), M_PI / 6.0, tmp2Faces, vertices);
+    translate(Vertex(0.0, -0.25, 0.0), tmp2Faces, vertices);
     tmpFaces.insert(tmpFaces.end(), tmp2Faces.begin(), tmp2Faces.end());
     for (std::vector<Quad>::const_iterator iter = tmpFaces.begin(),
              end = tmpFaces.end(); iter != end; ++iter) {
-        // subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
-        subdivide(*iter, vertices, faces, 4, 4);
+        subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
+        // subdivide(*iter, vertices, faces, 4, 4);
     }
 }
 

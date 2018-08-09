@@ -103,6 +103,11 @@ void subdivide(Quad const &quad,
                std::vector<Quad> &qs,
                GLint uCount, GLint vCount);
 
+// Translate the given quads, in-place
+void translate(Vertex const &t,
+           std::vector<Quad> &qs,
+           std::vector<Vertex> &vs);
+
 // Scale the given quads, in-place.
 void scale(double s,
            std::vector<Quad> &qs,

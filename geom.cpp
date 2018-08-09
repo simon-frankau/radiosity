@@ -248,6 +248,39 @@ public:
     }
 };
 
+class VertexTranslater : public VertexTransformer
+{
+private:
+    Vertex const &m_offset;
+
+    virtual Vertex transform(Vertex const &v)
+    {
+        return v + m_offset;
+    }
+
+public:
+    VertexTranslater(Vertex const &offset,
+                     std::vector<Vertex> &vertices)
+        : m_offset(offset), VertexTransformer(vertices)
+    {
+    }
+};
+
+// Translate the given quads, in-place.
+void translate(Vertex const &t,
+          std::vector<Quad> &qs,
+          std::vector<Vertex> &vs)
+{
+    VertexTranslater m(t, vs);
+
+    for (int i = 0, n = qs.size(); i < n; ++i) {
+        Quad &q = qs[i];
+        for (int j = 0; j < 4; ++j) {
+            q.indices[j] = m(q.indices[j]);
+        }
+    }
+}
+
 class VertexScaler : public VertexTransformer
 {
 private:
@@ -266,7 +299,7 @@ public:
     }
 };
 
-// Scale the given quads.
+// Scale the given quads, in-place.
 void scale(double s,
            std::vector<Quad> &qs,
            std::vector<Vertex> &vs)
@@ -330,7 +363,7 @@ public:
     }
 };
 
-// Rotate the given quads.
+// Rotate the given quads, in-place.
 void rotate(Vertex const &axis,
             double angle,
             std::vector<Quad> &qs,
