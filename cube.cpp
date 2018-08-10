@@ -98,6 +98,8 @@ static std::vector<Quad> faces;
 static std::vector<Vertex> vertices;
 // Array of quad-to-quad light transfers.
 static std::vector<double> transfers;
+// And data for generating Gouraud shading.
+static std::vector<SubdivInfo> subdivs;
 
 // Subdivide the faces
 void initGeometry(void)
@@ -106,7 +108,8 @@ void initGeometry(void)
     // Draw the outer 'scene' cube, by subdividing the prototype.
     for (std::vector<Quad>::const_iterator iter = cubeFaces.begin(),
              end = cubeFaces.end(); iter != end; ++iter) {
-        subdivide(*iter, vertices, faces, SUBDIVISION, SUBDIVISION);
+        subdivs.push_back(subdivide(*iter, vertices, faces,
+                                    SUBDIVISION, SUBDIVISION));
     }
 
     // Then draw the inner cube: Take the basic scene cube, scale it
@@ -121,7 +124,8 @@ void initGeometry(void)
     // as smaller).
     for (std::vector<Quad>::const_iterator iter = sceneFaces.begin(),
              end = sceneFaces.end(); iter != end; ++iter) {
-        subdivide(*iter, vertices, faces, SUBDIVISION / 2, SUBDIVISION / 2);
+        subdivs.push_back(subdivide(*iter, vertices, faces,
+                                    SUBDIVISION / 2, SUBDIVISION / 2));
     }
 }
 
@@ -143,6 +147,11 @@ int main(int argc, char **argv)
     } while (relChange > CONVERGENCE_TARGET);
 
     normaliseBrightness(faces, vertices);
-    render(faces, vertices);
+    std::vector<GouraudQuad> gourauds;
+    for (std::vector<SubdivInfo>::iterator iter = subdivs.begin(),
+             end = subdivs.end(); iter != end; ++iter) {
+        iter->generateGouraudQuads(gourauds);
+    }
+    renderGouraud(gourauds, vertices);
     return 0;
 }

@@ -10,8 +10,11 @@
 
 #include "geom.h"
 
-// Render the scene
-void render(std::vector<Quad> f, std::vector<Vertex> v);
+// Render the scene in flat-shaded quads
+void renderFlat(std::vector<Quad> f, std::vector<Vertex> v);
+
+// Render the scene with Gouraud shading
+void renderGouraud(std::vector<GouraudQuad> f, std::vector<Vertex> v);
 
 // Normalise the brightness of non-emitting components
 void normaliseBrightness(std::vector<Quad> &qs, std::vector<Vertex> const &vs);

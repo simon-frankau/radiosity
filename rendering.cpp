@@ -22,7 +22,8 @@ static const int HEIGHT = 512;
 
 static const Vertex EYE_POS = Vertex(0.0, 0.0, -3.0);
 
-static std::vector<Quad> faces;
+static std::vector<Quad> flatFaces;
+static std::vector<GouraudQuad> gouraudFaces;
 static std::vector<Vertex> vertices;
 
 static void screenshotPNG(const char *filename)
@@ -68,8 +69,12 @@ static void screenshotPNG(const char *filename)
 
 static void drawScene(void)
 {
-    for (std::vector<Quad>::const_iterator iter = faces.begin(),
-             end = faces.end(); iter != end; ++iter) {
+    for (std::vector<Quad>::const_iterator iter = flatFaces.begin(),
+             end = flatFaces.end(); iter != end; ++iter) {
+        iter->render(vertices);
+    }
+    for (std::vector<GouraudQuad>::const_iterator iter = gouraudFaces.begin(),
+             end = gouraudFaces.end(); iter != end; ++iter) {
         iter->render(vertices);
     }
 }
@@ -140,15 +145,26 @@ void normaliseBrightness(std::vector<Quad> &qs, std::vector<Vertex> const &vs)
     }
 }
 
-void render(std::vector<Quad> f, std::vector<Vertex> v)
+static void render()
 {
-    faces = f;
-    vertices = v;
-
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Radiosity demo");
     glutDisplayFunc(display);
     initGL();
     glutMainLoop();
+}
+
+void renderFlat(std::vector<Quad> f, std::vector<Vertex> v)
+{
+    flatFaces = f;
+    vertices = v;
+    render();
+}
+
+void renderGouraud(std::vector<GouraudQuad> f, std::vector<Vertex> v)
+{
+    gouraudFaces = f;
+    vertices = v;
+    render();
 }

@@ -149,24 +149,32 @@ private:
 ////////////////////////////////////////////////////////////////////////
 // Subdivision
 
-// Structure to hold the information tying together an
-// initial quad and a subdivided quad
+// Structure to hold the information tying together an initial quad
+// and a subdivided quad. Quad and vertex vectors must have a longer
+// lifetime than it.
 class SubdivInfo
 {
 public:
-    SubdivInfo(int uCount, int vCount, int vertexStart, int faceStart);
+    SubdivInfo(int uCount, int vCount,
+               int vertexStart, int faceStart,
+               std::vector<Vertex> &vs,
+               std::vector<Quad> const &qs);
 
-    void generateGouraudQuads(std::vector<Vertex> const &vs,
-                              std::vector<Quad> const &qsIn,
-                              std::vector<GouraudQuad> &qsOut);
+    void generateGouraudQuads(std::vector<GouraudQuad> &qsOut);
 
 private:
+    Quad const &quadAt(int u, int v) const;
+    Vertex const &vertexAt(int u, int v) const;
+
     friend class GeomTestCase;
 
     int m_uCount;
     int m_vCount;
     int m_vertexStart;
     int m_faceStart;
+    std::vector<Vertex> &m_vertices;
+    std::vector<Quad> const &m_faces;
+
 };
 
 // Break apart the given quad into a bunch of quads, add them to "qs",

@@ -443,27 +443,50 @@ SubdivInfo subdivide(Quad const &quad,
         }
     }
 
-    return SubdivInfo(uCount, vCount, vertexStart, faceStart);
+    return SubdivInfo(uCount, vCount, vertexStart, faceStart, vs, qs);
 }
 
-
-SubdivInfo::SubdivInfo(int uCount, int vCount, int vertexStart, int faceStart)
+SubdivInfo::SubdivInfo(int uCount, int vCount,
+                       int vertexStart, int faceStart,
+                       std::vector<Vertex> &vs,
+                       std::vector<Quad> const &qs)
     : m_uCount(uCount), m_vCount(vCount),
-      m_vertexStart(vertexStart), m_faceStart(faceStart)
+      m_vertexStart(vertexStart), m_faceStart(faceStart),
+      m_vertices(vs), m_faces(qs)
 {
 }
 
-void SubdivInfo::generateGouraudQuads(std::vector<Vertex> const &vs,
-                                      std::vector<Quad> const &qsIn,
-                                      std::vector<GouraudQuad> &qsOut)
+Quad const &SubdivInfo::quadAt(int u, int v) const
 {
-// NYI
-/* Using:
-    int m_uCount;
-    int m_vCount;
-    int m_vertexStart;
-    int m_faceStart;
-*/
+    return m_faces[m_faceStart + v * m_vCount + u];
+}
+
+Vertex const &SubdivInfo::vertexAt(int u, int v) const
+{
+    return m_vertices[m_vertexStart + v * (m_vCount + 1) + u];
+}
+
+void SubdivInfo::generateGouraudQuads(std::vector<GouraudQuad> &qsOut)
+{
+    // Initially, don't worry about edges/material transitions.
+    for (int v = 0; v < m_vCount - 1; ++v) {
+        for (int u = 0; u < m_uCount - 1; ++u) {
+            Quad const &q0 = quadAt(u,     v);
+            Quad const &q1 = quadAt(u + 1, v);
+            Quad const &q2 = quadAt(u + 1, v + 1);
+            Quad const &q3 = quadAt(u    , v + 1);
+            int i = m_vertices.size();
+            m_vertices.push_back(paraCentre(q0, m_vertices));
+            m_vertices.push_back(paraCentre(q1, m_vertices));
+            m_vertices.push_back(paraCentre(q2, m_vertices));
+            m_vertices.push_back(paraCentre(q3, m_vertices));
+            qsOut.push_back(GouraudQuad(i, i + 1, i + 2, i + 3,
+                                        q0.screenColour,
+                                        q1.screenColour,
+                                        q2.screenColour,
+                                        q3.screenColour));
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
