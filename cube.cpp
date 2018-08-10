@@ -147,11 +147,12 @@ int main(int argc, char **argv)
     } while (relChange > CONVERGENCE_TARGET);
 
     normaliseBrightness(faces, vertices);
+    std::vector<Vertex> gVertices;
     std::vector<GouraudQuad> gourauds;
     for (std::vector<SubdivInfo>::iterator iter = subdivs.begin(),
              end = subdivs.end(); iter != end; ++iter) {
-        iter->generateGouraudQuads(gourauds);
+        iter->generateGouraudQuads(gourauds, gVertices);
     }
-    renderGouraud(gourauds, vertices);
+    renderGouraud(gourauds, gVertices);
     return 0;
 }

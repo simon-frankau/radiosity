@@ -42,6 +42,7 @@ private:
     CPPUNIT_TEST(testColourMultiplyScalar);
     CPPUNIT_TEST(testColourMultiplyColour);
     CPPUNIT_TEST(testColourAdd);
+    CPPUNIT_TEST(testColourAddSelf);
     CPPUNIT_TEST(testColourAsGrey);
     // Quad cases
     CPPUNIT_TEST(testQuadConstruct);
@@ -81,6 +82,7 @@ private:
     void testColourMultiplyScalar();
     void testColourMultiplyColour();
     void testColourAdd();
+    void testColourAddSelf();
     void testColourAsGrey();
     // Quad cases
     void testQuadConstruct();
@@ -310,6 +312,15 @@ void GeomTestCase::testColourMultiplyColour()
 }
 
 void GeomTestCase::testColourAdd()
+{
+    Colour c;
+    c = TEST_COLOUR + TEST_COLOUR;
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0 * TEST_COLOUR.r, c.r, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0 * TEST_COLOUR.g, c.g, 1e-9);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0 * TEST_COLOUR.b, c.b, 1e-9);
+}
+
+void GeomTestCase::testColourAddSelf()
 {
     Colour c(TEST_COLOUR);
     c += TEST_COLOUR;

@@ -142,6 +142,11 @@ Colour Colour::operator*(Colour const &c) const
     return Colour(r * c.r, g * c.g, b * c.b);
 }
 
+Colour Colour::operator+(Colour const &c) const
+{
+    return Colour(r + c.r, g + c.g, b + c.b);
+}
+
 Colour &Colour::operator+=(Colour const &c)
 {
     r += c.r; g += c.g; b += c.b;
@@ -408,18 +413,15 @@ void GouraudQuad::render(std::vector<Vertex> const &v) const
 ////////////////////////////////////////////////////////////////////////
 // Subdivision.
 
-// Break apart the given quad into a bunch of quads, add them to "qs",
-// and add the new vertices to "vs".
-SubdivInfo subdivide(Quad const &quad,
-                     std::vector<Vertex> &vs,
-                     std::vector<Quad> &qs,
-                     int uCount, int vCount)
+static int buildGrid(int uCount, int vCount, Quad const &quad,
+                     std::vector<Vertex> const &vsIn,
+                     std::vector<Vertex> &vsOut)
 {
-    int const vertexStart = vs.size();
-    Vertex v0 = vs[quad.indices[0]];
-    Vertex v1 = vs[quad.indices[1]];
-    Vertex v2 = vs[quad.indices[2]];
-    Vertex v3 = vs[quad.indices[3]];
+    int const vertexStart = vsOut.size();
+    Vertex v0 = vsIn[quad.indices[0]];
+    Vertex v1 = vsIn[quad.indices[1]];
+    Vertex v2 = vsIn[quad.indices[2]];
+    Vertex v3 = vsIn[quad.indices[3]];
 
     // Generate the grid of points we will build the quads from.
     for (int v = 0; v < vCount + 1; ++v) {
@@ -427,9 +429,21 @@ SubdivInfo subdivide(Quad const &quad,
             Vertex u0 = lerp(v0, v1, static_cast<double>(u) / uCount);
             Vertex u1 = lerp(v3, v2, static_cast<double>(u) / uCount);
             Vertex pt = lerp(u0, u1, static_cast<double>(v) / vCount);
-            vs.push_back(pt);
+            vsOut.push_back(pt);
         }
     }
+
+    return vertexStart;
+}
+
+// Break apart the given quad into a bunch of quads, add them to "qs",
+// and add the new vertices to "vs".
+SubdivInfo subdivide(Quad const &quad,
+                     std::vector<Vertex> &vs,
+                     std::vector<Quad> &qs,
+                     int uCount, int vCount)
+{
+    int const vertexStart = buildGrid(uCount, vCount, quad, vs, vs);
 
     // Build the corners of the quads.
     int const faceStart = qs.size();
@@ -443,48 +457,121 @@ SubdivInfo subdivide(Quad const &quad,
         }
     }
 
-    return SubdivInfo(uCount, vCount, vertexStart, faceStart, vs, qs);
+    return SubdivInfo(quad, uCount, vCount, vertexStart, faceStart, vs, qs);
 }
 
-SubdivInfo::SubdivInfo(int uCount, int vCount,
+SubdivInfo::SubdivInfo(Quad const &baseQuad,
+                       int uCount, int vCount,
                        int vertexStart, int faceStart,
-                       std::vector<Vertex> &vs,
+                       std::vector<Vertex> const &vs,
                        std::vector<Quad> const &qs)
-    : m_uCount(uCount), m_vCount(vCount),
+    : m_baseQuad(baseQuad),
+      m_uCount(uCount), m_vCount(vCount),
       m_vertexStart(vertexStart), m_faceStart(faceStart),
       m_vertices(vs), m_faces(qs)
 {
 }
 
-Quad const &SubdivInfo::quadAt(int u, int v) const
+// Quick helper to tell us if a particular grid square is emitter.
+bool SubdivInfo::emitsAt(int u, int v) const
 {
-    return m_faces[m_faceStart + v * m_vCount + u];
+    return m_faces[m_faceStart + v * m_uCount + u].isEmitter;
 }
 
-Vertex const &SubdivInfo::vertexAt(int u, int v) const
+// Quick helper to fetch raw colour
+Colour const &SubdivInfo::rawColourAt(int u, int v) const
 {
-    return m_vertices[m_vertexStart + v * (m_vCount + 1) + u];
+    return m_faces[m_faceStart + v * m_uCount + u].screenColour;
 }
 
-void SubdivInfo::generateGouraudQuads(std::vector<GouraudQuad> &qsOut)
+
+// Find colour at an offset from the centre, refusing to cross edges
+// or emitter/non-emitter boundaries (and instead extrapolating).
+Colour SubdivInfo::colourAt(int u, int v, int offU, int offV) const
 {
-    // Initially, don't worry about edges/material transitions.
-    for (int v = 0; v < m_vCount - 1; ++v) {
-        for (int u = 0; u < m_uCount - 1; ++u) {
-            Quad const &q0 = quadAt(u,     v);
-            Quad const &q1 = quadAt(u + 1, v);
-            Quad const &q2 = quadAt(u + 1, v + 1);
-            Quad const &q3 = quadAt(u    , v + 1);
-            int i = m_vertices.size();
-            m_vertices.push_back(paraCentre(q0, m_vertices));
-            m_vertices.push_back(paraCentre(q1, m_vertices));
-            m_vertices.push_back(paraCentre(q2, m_vertices));
-            m_vertices.push_back(paraCentre(q3, m_vertices));
-            qsOut.push_back(GouraudQuad(i, i + 1, i + 2, i + 3,
-                                        q0.screenColour,
-                                        q1.screenColour,
-                                        q2.screenColour,
-                                        q3.screenColour));
+    // Constant extrapolation off edges.
+    if (u + offU < 0 || u + offU >= m_uCount) {
+        offU = 0;
+    }
+    if (v + offV < 0 || v + offV >= m_vCount) {
+        offV = 0;
+    }
+
+    // Handle crossing between emitter/non-emitter.
+    bool centreEmits = emitsAt(u, v);
+    bool offEmits = emitsAt(u + offU, v + offV);
+    if (centreEmits != offEmits) {
+        bool sameEmitU = centreEmits == emitsAt(u + offU, v);
+        bool sameEmitV = centreEmits == emitsAt(u, v + offV);
+        if (sameEmitU && sameEmitV) {
+            // Just that corner needs to be taken off. Let's
+            // interpolate across it as best we can.
+            return rawColourAt(u + offU, v) * 0.5 +
+                   rawColourAt(u, v + offV) * 0.5;
+        } else if (sameEmitU) {
+            return rawColourAt(u + offU, v);
+        } else if (sameEmitV) {
+            return rawColourAt(u, v + offV);
+        } else {
+            return rawColourAt(u, v);
+        }
+    }
+
+    return rawColourAt(u + offU, v + offV);
+}
+
+void SubdivInfo::generateGouraudQuads(
+    std::vector<GouraudQuad> &qsOut,
+    std::vector<Vertex> &vsOut) const
+{
+    // Build a grid 2x resolution of original:
+    int const vertexStart = buildGrid(m_uCount * 2, m_vCount * 2,
+                                      m_baseQuad, m_vertices, vsOut);
+
+    // And then fill in a 2x2 "half-unit" grid for each quad in the
+    // original:
+    for (int v = 0; v < m_vCount; ++v) {
+        for (int u = 0; u < m_uCount; ++u) {
+            // We'll arrange the grid like this:
+            // a b c
+            // d e f
+            // g h i
+            int u2 = u * 2, v2 = v * 2;
+            // Find indices into the vertex array for the points we
+            // need.
+            int idxa = vertexStart + v2 * (m_uCount * 2 + 1) + u2;
+            int idxd = idxa + m_uCount * 2 + 1;
+            int idxg = idxd + m_uCount * 2 + 1;
+            int idxb = idxa + 1, idxc = idxa + 2;
+            int idxe = idxd + 1, idxf = idxd + 2;
+            int idxh = idxg + 1, idxi = idxg + 2;
+            // And then look up colours in the quads on the unit grid:
+            Colour ca = colourAt(u, v, -1, -1);
+            Colour cb = colourAt(u, v,  0, -1);
+            Colour cc = colourAt(u, v, +1, -1);
+            Colour cd = colourAt(u, v, -1,  0);
+            Colour ce = colourAt(u, v,  0,  0);
+            Colour cf = colourAt(u, v, +1,  0);
+            Colour cg = colourAt(u, v, -1, +1);
+            Colour ch = colourAt(u, v,  0, +1);
+            Colour ci = colourAt(u, v, +1, +1);
+            // And interpolate horizontally...
+            ca = ca * 0.5 + cb * 0.5; cc = cb * 0.5 + cc * 0.5;
+            cd = cd * 0.5 + ce * 0.5; cf = ce * 0.5 + cf * 0.5;
+            cg = cg * 0.5 + ch * 0.5; ci = ch * 0.5 + ci * 0.5;
+            // And vertically.
+            ca = ca * 0.5 + cd * 0.5; cg = cd * 0.5 + cg * 0.5;
+            cb = cb * 0.5 + ce * 0.5; ch = ce * 0.5 + ch * 0.5;
+            cc = cc * 0.5 + cf * 0.5; ci = cf * 0.5 + ci * 0.5;
+            // And then create the quads
+            qsOut.push_back(GouraudQuad(idxa, idxb, idxe, idxd,
+                                        ca,   cb,   ce,   cd));
+            qsOut.push_back(GouraudQuad(idxb, idxc, idxf, idxe,
+                                        cb,   cc,   cf,   ce));
+            qsOut.push_back(GouraudQuad(idxd, idxe, idxh, idxg,
+                                        cd,   ce,   ch,   cg));
+            qsOut.push_back(GouraudQuad(idxe, idxf, idxi, idxh,
+                                        ce,   cf,   ci,   ch));
         }
     }
 }

@@ -216,6 +216,7 @@ void RenderTransferCalculator::calcAllLights(std::vector<double> &weights)
         // Somewhat slow, so print progress.
         std::cerr << ".";
     }
+    std::cerr << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -69,6 +69,7 @@ public:
 
     Colour operator*(double x) const;
     Colour operator*(Colour const &c) const;
+    Colour operator+(Colour const &c) const;;
     Colour &operator+=(Colour const &c);
 
     double asGrey() const;
@@ -155,24 +156,28 @@ private:
 class SubdivInfo
 {
 public:
-    SubdivInfo(int uCount, int vCount,
+    SubdivInfo(Quad const &baseQuad,
+               int uCount, int vCount,
                int vertexStart, int faceStart,
-               std::vector<Vertex> &vs,
+               std::vector<Vertex> const &vs,
                std::vector<Quad> const &qs);
 
-    void generateGouraudQuads(std::vector<GouraudQuad> &qsOut);
+    void generateGouraudQuads(std::vector<GouraudQuad> &qsOut,
+                              std::vector<Vertex> &vsOut) const;
 
 private:
-    Quad const &quadAt(int u, int v) const;
-    Vertex const &vertexAt(int u, int v) const;
+    bool emitsAt(int u, int v) const;
+    Colour const &rawColourAt(int u, int v) const;
+    Colour colourAt(int u, int v, int offU, int offV) const;
 
     friend class GeomTestCase;
 
+    Quad m_baseQuad;
     int m_uCount;
     int m_vCount;
     int m_vertexStart;
     int m_faceStart;
-    std::vector<Vertex> &m_vertices;
+    std::vector<Vertex> const &m_vertices;
     std::vector<Quad> const &m_faces;
 
 };
