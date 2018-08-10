@@ -389,7 +389,7 @@ void GeomTestCase::testQuadTrivialSubdivision()
     vs.push_back(Vertex(1.0, 1.0, 5.0));
 
     Quad q(0, 1, 2, 3, TEST_COLOUR);
-    subdivide(q, vs, qs, 1, 1);
+    SubdivInfo info = subdivide(q, vs, qs, 1, 1);
 
     CPPUNIT_ASSERT_EQUAL(1ul, qs.size());
     Quad &q2 = qs[0];
@@ -399,6 +399,11 @@ void GeomTestCase::testQuadTrivialSubdivision()
     CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.r, q2.materialColour.r, 1e-9);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.g, q2.materialColour.g, 1e-9);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(q.materialColour.b, q2.materialColour.b, 1e-9);
+
+    CPPUNIT_ASSERT_EQUAL(1, info.m_uCount);
+    CPPUNIT_ASSERT_EQUAL(1, info.m_vCount);
+    CPPUNIT_ASSERT_EQUAL(4, info.m_vertexStart); // After the 4 created already.
+    CPPUNIT_ASSERT_EQUAL(0, info.m_faceStart);   // First entry in fresh vector.
 }
 
 void GeomTestCase::testQuadSubdivision()
@@ -415,7 +420,7 @@ void GeomTestCase::testQuadSubdivision()
 
     Quad q(0, 1, 2, 3, TEST_COLOUR);
 
-    subdivide(q, vs, qs, 10, 20);
+    SubdivInfo info =subdivide(q, vs, qs, 10, 20);
     CPPUNIT_ASSERT_EQUAL(10ul * 20ul, qs.size());
 
     double subdivArea = 0.0;
@@ -429,6 +434,11 @@ void GeomTestCase::testQuadSubdivision()
         subdivArea += paraArea(qs[i], vs);
     }
     CPPUNIT_ASSERT_DOUBLES_EQUAL(paraArea(q, vs), subdivArea, 1e-9);
+
+    CPPUNIT_ASSERT_EQUAL(10, info.m_uCount);
+    CPPUNIT_ASSERT_EQUAL(20, info.m_vCount);
+    CPPUNIT_ASSERT_EQUAL(4, info.m_vertexStart); // After the 4 created already.
+    CPPUNIT_ASSERT_EQUAL(0, info.m_faceStart);   // First entry in fresh vector.
 }
 
 void GeomTestCase::testFlip()

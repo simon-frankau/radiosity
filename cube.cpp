@@ -26,7 +26,7 @@ const double CONVERGENCE_TARGET = 0.001;
 
 // Break up each base quad into subdivision^2 subquads for radiosity
 // calculations.
-GLint const SUBDIVISION = 32;
+int const SUBDIVISION = 32;
 
 ////////////////////////////////////////////////////////////////////////
 // Radiosity calculations

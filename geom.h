@@ -82,15 +82,15 @@ public:
 class Quad
 {
 public:
-    Quad(GLint v1, GLint v2,
-         GLint v3, GLint v4,
+    Quad(int v1, int v2,
+         int v3, int v4,
          Colour const &c);
 
     void render(std::vector<Vertex> const &v) const;
     // For transfer calculations.
     void renderIndex(int index, std::vector<Vertex> const &v) const;
 
-    GLint indices[4];
+    int indices[4];
     // Does this quad emit light, or just reflect?
     bool isEmitter;
     // How much light it emits, or the fraction reflected.
@@ -109,13 +109,6 @@ Vertex paraCross(Quad const &q, std::vector<Vertex> const &vs);
 
 // Find area of given parallelogram.
 double paraArea(Quad const &q, std::vector<Vertex> const &vs);
-
-// Break apart the given quad into a bunch of quads, add them to "qs",
-// and add the new vertices to "vs".
-void subdivide(Quad const &quad,
-               std::vector<Vertex> &vs,
-               std::vector<Quad> &qs,
-               GLint uCount, GLint vCount);
 
 // Translate the given quads, in-place
 void translate(Vertex const &t,
@@ -136,6 +129,52 @@ void rotate(Vertex const &axis,
 // Flip the facing direction of the given quads, in-place.
 void flip(std::vector<Quad> &qs,
           std::vector<Vertex> &vs);
+
+////////////////////////////////////////////////////////////////////////
+// Gouraud-shaded quad, used only for final rendering.
+
+class GouraudQuad
+{
+public:
+    GouraudQuad(int v1, int v2, int v3, int v4,
+                Colour c1, Colour c2, Colour c3, Colour c4);
+
+    void render(std::vector<Vertex> const &v) const;
+
+private:
+    int m_indices[4];
+    Colour m_colours[4];
+};
+
+////////////////////////////////////////////////////////////////////////
+// Subdivision
+
+// Structure to hold the information tying together an
+// initial quad and a subdivided quad
+class SubdivInfo
+{
+public:
+    SubdivInfo(int uCount, int vCount, int vertexStart, int faceStart);
+
+    void generateGouraudQuads(std::vector<Vertex> const &vs,
+                              std::vector<Quad> const &qsIn,
+                              std::vector<GouraudQuad> &qsOut);
+
+private:
+    friend class GeomTestCase;
+
+    int m_uCount;
+    int m_vCount;
+    int m_vertexStart;
+    int m_faceStart;
+};
+
+// Break apart the given quad into a bunch of quads, add them to "qs",
+// and add the new vertices to "vs".
+SubdivInfo subdivide(Quad const &quad,
+                     std::vector<Vertex> &vs,
+                     std::vector<Quad> &qs,
+                     int uCount, int vCount);
 
 ////////////////////////////////////////////////////////////////////////
 // Basic shapes.

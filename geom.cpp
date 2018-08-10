@@ -156,7 +156,7 @@ double Colour::asGrey() const
 ////////////////////////////////////////////////////////////////////////
 // Quad
 
-Quad::Quad(GLint v1, GLint v2, GLint v3, GLint v4, Colour const &c)
+Quad::Quad(int v1, int v2, int v3, int v4, Colour const &c)
     : indices { v1, v2, v3, v4 }, isEmitter(false), materialColour(c)
 {
 }
@@ -220,41 +220,6 @@ Vertex paraCross(Quad const &q, std::vector<Vertex> const &vs)
 double paraArea(Quad const &q, std::vector<Vertex> const &vs)
 {
     return paraCross(q, vs).len();
-}
-
-// Break apart the given quad into a bunch of quads, add them to "qs",
-// and add the new vertices to "vs".
-void subdivide(Quad const &quad,
-               std::vector<Vertex> &vs,
-               std::vector<Quad> &qs,
-               GLint uCount, GLint vCount)
-{
-    GLint offset = vs.size();
-    Vertex v0 = vs[quad.indices[0]];
-    Vertex v1 = vs[quad.indices[1]];
-    Vertex v2 = vs[quad.indices[2]];
-    Vertex v3 = vs[quad.indices[3]];
-
-    // Generate the grid of points we will build the quads from.
-    for (GLint v = 0; v < vCount + 1; ++v) {
-        for (GLint u = 0; u < uCount + 1; ++u) {
-            Vertex u0 = lerp(v0, v1, static_cast<double>(u) / uCount);
-            Vertex u1 = lerp(v3, v2, static_cast<double>(u) / uCount);
-            Vertex pt = lerp(u0, u1, static_cast<double>(v) / vCount);
-            vs.push_back(pt);
-        }
-    }
-
-    // Build the corners of the quads.
-    for (GLint v = 0; v < vCount; ++v) {
-        for (GLint u = 0; u < uCount; ++u) {
-            GLint base = offset + v * (uCount + 1) + u;
-            qs.push_back(Quad(base, base + 1,
-                              base + uCount + 2, base + uCount + 1,
-                              quad.materialColour));
-            qs.back().isEmitter = quad.isEmitter;
-        }
-    }
 }
 
 // Applies a transform to the requested vertices, with a cache.
@@ -408,6 +373,97 @@ void flip(std::vector<Quad> &qs,
         Quad &q = qs[i];
         std::swap(q.indices[1], q.indices[3]);
     }
+}
+
+////////////////////////////////////////////////////////////////////////
+// Gouraud-shaded quad, used only for final rendering.
+
+GouraudQuad::GouraudQuad(int v1, int v2, int v3, int v4,
+                         Colour c1, Colour c2, Colour c3, Colour c4)
+    : m_indices { v1, v2, v3, v4 },
+      m_colours { c1, c2, c3, c4 }
+{
+}
+
+void GouraudQuad::render(std::vector<Vertex> const &v) const
+{
+    Vertex const &v0 = v[m_indices[0]];
+    Vertex const &v1 = v[m_indices[1]];
+    Vertex const &v2 = v[m_indices[2]];
+    Vertex const &v3 = v[m_indices[3]];
+    Vertex n = cross(v3 - v0, v1 - v0).norm();
+    glBegin(GL_QUADS);
+    glNormal3dv(n.p);
+    glColor3d(m_colours[0].r, m_colours[0].g, m_colours[0].b);
+    glVertex3dv(v0.p);
+    glColor3d(m_colours[1].r, m_colours[1].g, m_colours[1].b);
+    glVertex3dv(v1.p);
+    glColor3d(m_colours[2].r, m_colours[2].g, m_colours[2].b);
+    glVertex3dv(v2.p);
+    glColor3d(m_colours[3].r, m_colours[3].g, m_colours[3].b);
+    glVertex3dv(v3.p);
+    glEnd();
+}
+
+////////////////////////////////////////////////////////////////////////
+// Subdivision.
+
+// Break apart the given quad into a bunch of quads, add them to "qs",
+// and add the new vertices to "vs".
+SubdivInfo subdivide(Quad const &quad,
+                     std::vector<Vertex> &vs,
+                     std::vector<Quad> &qs,
+                     int uCount, int vCount)
+{
+    int const vertexStart = vs.size();
+    Vertex v0 = vs[quad.indices[0]];
+    Vertex v1 = vs[quad.indices[1]];
+    Vertex v2 = vs[quad.indices[2]];
+    Vertex v3 = vs[quad.indices[3]];
+
+    // Generate the grid of points we will build the quads from.
+    for (int v = 0; v < vCount + 1; ++v) {
+        for (int u = 0; u < uCount + 1; ++u) {
+            Vertex u0 = lerp(v0, v1, static_cast<double>(u) / uCount);
+            Vertex u1 = lerp(v3, v2, static_cast<double>(u) / uCount);
+            Vertex pt = lerp(u0, u1, static_cast<double>(v) / vCount);
+            vs.push_back(pt);
+        }
+    }
+
+    // Build the corners of the quads.
+    int const faceStart = qs.size();
+    for (int v = 0; v < vCount; ++v) {
+        for (int u = 0; u < uCount; ++u) {
+            int base = vertexStart + v * (uCount + 1) + u;
+            qs.push_back(Quad(base, base + 1,
+                              base + uCount + 2, base + uCount + 1,
+                              quad.materialColour));
+            qs.back().isEmitter = quad.isEmitter;
+        }
+    }
+
+    return SubdivInfo(uCount, vCount, vertexStart, faceStart);
+}
+
+
+SubdivInfo::SubdivInfo(int uCount, int vCount, int vertexStart, int faceStart)
+    : m_uCount(uCount), m_vCount(vCount),
+      m_vertexStart(vertexStart), m_faceStart(faceStart)
+{
+}
+
+void SubdivInfo::generateGouraudQuads(std::vector<Vertex> const &vs,
+                                      std::vector<Quad> const &qsIn,
+                                      std::vector<GouraudQuad> &qsOut)
+{
+// NYI
+/* Using:
+    int m_uCount;
+    int m_vCount;
+    int m_vertexStart;
+    int m_faceStart;
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////
