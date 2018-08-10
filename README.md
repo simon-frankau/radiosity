@@ -1,9 +1,13 @@
 # Radiosity
 
+![Example rendering](examples/scaled_small.png)
+
 The aim of this project is to construct a radiosity-based
 diffuse-diffuse interaction renderer based on half-remembered
 fifteen-plus-year-old knowledge and working it out again from first
 principles.
+
+It's more-or-less worked.
 
 ## Reconstructing the theory
 
@@ -94,3 +98,7 @@ calculations are done using transmission to a few thousand rectangles.
 
 We have empirical evidence that the calculations are about right, and
 can look into bouncing the light around...
+
+## And the practice?
+
+Source is in this project. :)
