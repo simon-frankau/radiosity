@@ -17,8 +17,8 @@
 
 #include "geom.h"
 
-static const int WIDTH = 512;
-static const int HEIGHT = 512;
+static const int WIDTH = 2048;
+static const int HEIGHT = 2048;
 
 static const Vertex EYE_POS = Vertex(0.0, 0.0, -3.0);
 
@@ -152,6 +152,9 @@ static void render()
     glutCreateWindow("Radiosity demo");
     glutDisplayFunc(display);
     initGL();
+    // Render one-off first, so we can get it saved to disk without
+    // getting it limited to screen size...
+    display();
     glutMainLoop();
 }
 
